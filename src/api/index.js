@@ -1,3 +1,4 @@
+// eslint-disable-next-line prettier/prettier
 import axios from "axios";
 
 axios.defaults.baseURL = process.env.VUE_APP_BASEURL;
@@ -22,15 +23,20 @@ export default class Request {
       url,
       data,
     });
+    console.log(response);
+
     return response;
   }
 
+  // For future use;
   async patch(url, data = null) {
     const response = await this.make({
-      method: "POST",
+      method: "PATCH",
       url,
       data,
     });
+    console.log(response);
+
     return response;
   }
 }
