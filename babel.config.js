@@ -1,3 +1,2 @@
-module.exports = {
-  presets: ["@vue/cli-plugin-babel/preset"],
-};
+/* eslint-disable prettier/prettier */
+export const presets = ["@vue/cli-plugin-babel/preset"];
