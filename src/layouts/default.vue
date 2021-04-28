@@ -1,64 +1,68 @@
 <template>
   <v-app>
-    <v-navigation-drawer
-      disable-resize-watcher
-      v-model="drawer"
-      app
-      clipped
-      :style="`margin-top: ${$vuetify.application.top}px`"
+    <BaseNavigationDrawer v-model="drawer">
+      <template #drawer-items>
+        <BaseList :links="links" />
+      </template>
+    </BaseNavigationDrawer>
+
+    <BaseToolbar
+      @toggle-drawer="handleDrawer"
+      :isMobile="isMobile"
+      title="Raha App"
     >
-      <v-list>
-        <v-list-item to="/">
-          <v-list-item-icon><v-icon> mdi-account</v-icon></v-list-item-icon>
-          <v-list-item-content>User Management</v-list-item-content>
-        </v-list-item>
-        <v-list-item to="/about">
-          <v-list-item-icon><v-icon>mdi-finance</v-icon></v-list-item-icon>
-          <v-list-item-content>Manage Finance</v-list-item-content>
-        </v-list-item>
-      </v-list>
-      <!-- <v-btn to="/" text>
-        <span class="mr-2">User Management</span>
-        <v-icon>mdi-account</v-icon>
-      </v-btn>
+      <template #toolbar-items>
+        <BaseButton :links="links" v-show="!isMobile" />
+      </template>
+    </BaseToolbar>
 
-      <v-btn to="/about" text>
-        <span class="mr-2">Manage Finance</span>
-        <v-icon>mdi-finance</v-icon>
-      </v-btn> -->
-    </v-navigation-drawer>
-
-    <v-app-bar app color="primary" dark clipped-left>
-      <v-app-bar-nav-icon
-        v-show="isMobile"
-        @click="drawer = !drawer"
-      ></v-app-bar-nav-icon>
-
-      <v-toolbar-title>Raha App</v-toolbar-title>
-
-      <v-spacer></v-spacer>
-
-      <v-btn to="/" text v-show="!isMobile">
-        <span class="mr-2">User Management</span>
-        <v-icon>mdi-account</v-icon>
-      </v-btn>
-
-      <v-btn to="/about" text v-show="!isMobile">
-        <span class="mr-2">Manage Finance</span>
-        <v-icon>mdi-finance</v-icon>
-      </v-btn>
-    </v-app-bar>
-
-    <v-main>
-      <slot></slot>
+    <v-main class="grey lighten-3">
+      <v-container>
+        <v-layout row wrap>
+          <v-col class="fill-height">
+            <v-sheet min-height="70vh" rounded="lg">
+              <slot></slot>
+            </v-sheet>
+          </v-col>
+        </v-layout>
+      </v-container>
     </v-main>
   </v-app>
 </template>
 
 <script>
+import BaseNavigationDrawer from "../components/BaseNavigationDrawer/BaseNavigationDrawer";
+import BaseToolbar from "../components/BaseToolbar/BaseToolbar";
+import BaseList from "../components/BaseList/BaseList";
+import BaseButton from "../components/BaseButton/BaseButton";
+
 export default {
-  data: () => ({ drawer: false }),
-  methods: {},
+  data: () => ({
+    drawer: false,
+    links: [
+      {
+        title: "User Management",
+        icon: "mdi-account",
+        href: "/",
+      },
+      {
+        title: "Manage Finance",
+        icon: "mdi-finance",
+        href: "/finance",
+      },
+    ],
+  }),
+  components: {
+    BaseNavigationDrawer,
+    BaseToolbar,
+    BaseList,
+    BaseButton,
+  },
+  methods: {
+    handleDrawer() {
+      this.drawer = !this.drawer;
+    },
+  },
   computed: {
     isMobile() {
       return this.$vuetify.breakpoint.mdAndDown;
