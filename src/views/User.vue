@@ -3,8 +3,7 @@
     <v-layout row>
       <v-col cols="12" md="4">
         <v-card class="pa-5" outlined tile>
-          <h2>Create Account</h2>
-          <v-spacer></v-spacer>
+          <v-card-title class="pa-0"><h2>Create Account</h2></v-card-title>
           <v-row align-md="baseline" no-gutters>
             <v-col cols="12" lg="7">
               <v-text-field
@@ -44,8 +43,27 @@
       </v-col>
       <v-divider vertical></v-divider>
       <v-col cols="12" md="8">
+        <!-- Todo: Add ability to change user's name or delete users -->
         <v-card class="pa-2" outlined tile>
-          .col-12 .col-sm-6 .col-md-8
+          <v-card-title>
+            <v-text-field
+              v-model="search"
+              append-icon="mdi-magnify"
+              label="Search"
+              single-line
+              hide-details
+            ></v-text-field>
+          </v-card-title>
+          <v-data-table
+            v-model="selected"
+            :headers="headers"
+            :items="users"
+            item-key="id"
+            single-select
+            show-select
+            :search="search"
+          >
+          </v-data-table>
         </v-card>
       </v-col>
     </v-layout>
@@ -66,6 +84,32 @@ export default {
     rules: [
       (value) => !!value || "Required.",
       (value) => (value && value.length >= 5) || "Min 5 characters",
+    ],
+    headers: [
+      {
+        text: "User",
+        value: "name",
+      },
+      {
+        text: "Balance",
+        value: "balance",
+      },
+    ],
+    selected: [],
+    search: "",
+    users: [
+      {
+        id: "5abdcb0c-c628-487b-b1b5-d055e2934acf",
+        name: "LHV",
+        number: "V5DOJKNKSZANO4UE",
+        balance: 0,
+      },
+      {
+        id: "8d193df2-d1ce-409e-a384-7ed7ec966f6e",
+        name: "TestUser",
+        number: "VDWGJAJDVARBLL5P",
+        balance: 0,
+      },
     ],
   }),
   methods: {
