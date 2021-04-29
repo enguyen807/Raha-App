@@ -12,8 +12,12 @@ export default {
   components: {
     BaseLayout,
   },
+  mounted() {
+    this.$store.dispatch("getUsers");
+  },
   data: () => ({
     //
   }),
+  computed: {},
 };
 </script>

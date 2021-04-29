@@ -3,43 +3,46 @@
     <v-layout row>
       <v-col cols="12" md="4">
         <v-card class="pa-5" outlined tile>
-          <v-card-title class="pa-0"><h2>Create Account</h2></v-card-title>
-          <v-row align-md="baseline" no-gutters>
-            <v-col cols="12" lg="7">
-              <v-text-field
-                v-model="username"
-                label="Username"
-                :rules="rules"
-                :success="success"
-                :success-messages="successMsg"
-                :error="error"
-                :error-messages="errorMsg"
-                @input="handleInputChanges"
-              ></v-text-field>
-            </v-col>
-            <v-col cols="12" lg="3">
-              <v-btn
-                block
-                small
-                light
-                color="info"
-                elevation="2"
-                @click="checkIfUsernameIsAvailable"
-                >Check Username</v-btn
-              >
-            </v-col>
-          </v-row>
-          <v-btn
-            :disabled="username && isUsernameAvailable ? false : true"
-            block
-            small
-            light
-            color="accent"
-            elevation="2"
-            class="mt-lg-0 mt-md-3 mt-3"
-            @click="createAccount"
-            >Create Account</v-btn
-          >
+          <v-form ref="createAccountForm" v-model="formIsValid" lazy-validation>
+            <v-card-title class="pa-0"><h2>Create Account</h2></v-card-title>
+            <v-row align-md="baseline" no-gutters>
+              <v-col cols="12" lg="7">
+                <v-text-field
+                  v-model="username"
+                  label="Username"
+                  :rules="rules"
+                  :success="success"
+                  :success-messages="successMsg"
+                  :error="error"
+                  :error-messages="errorMsg"
+                  @input="handleInputChanges"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" lg="3">
+                <v-btn
+                  block
+                  small
+                  light
+                  color="info"
+                  elevation="2"
+                  :disabled="!formIsValid || !username"
+                  @click="saveUser"
+                  >Check Username</v-btn
+                >
+              </v-col>
+            </v-row>
+            <v-btn
+              :disabled="!formIsValid || !isUsernameAvailable ? true : false"
+              block
+              small
+              light
+              color="accent"
+              elevation="2"
+              class="mt-lg-0 mt-md-3 mt-3"
+              @click="createAccount"
+              >Create Account</v-btn
+            >
+          </v-form>
         </v-card>
       </v-col>
       <v-divider vertical></v-divider>
@@ -82,6 +85,7 @@ export default {
     isUsernameAvailable: false,
     success: false,
     error: false,
+    formIsValid: true,
     rules: [
       (value) => !!value || "Required.",
       (value) => (value && value.length >= 5) || "Min 5 characters",
@@ -98,20 +102,6 @@ export default {
     ],
     selected: [],
     search: "",
-    users: [
-      {
-        id: "5abdcb0c-c628-487b-b1b5-d055e2934acf",
-        name: "LHV",
-        number: "V5DOJKNKSZANO4UE",
-        balance: 0,
-      },
-      {
-        id: "8d193df2-d1ce-409e-a384-7ed7ec966f6e",
-        name: "TestUser",
-        number: "VDWGJAJDVARBLL5P",
-        balance: 0,
-      },
-    ],
   }),
   methods: {
     async checkIfUsernameIsAvailable() {
@@ -134,20 +124,27 @@ export default {
       }
     },
     handleInputChanges() {
+      this.isUsernameAvailable = false;
       this.success = false;
       this.error = false;
     },
+    saveUser() {},
     async createAccount() {
       const data = JSON.stringify({ data: { name: this.username } });
 
       const response = await this.req.make("POST", "/api/v1/accounts", data);
 
-      if (response.status === 200) {
-        this.username = "";
+      if (response.status === 201) {
+        this.handleInputChanges();
+        this.$refs.createAccountForm.reset();
+        this.$refs.createAccountForm.resetValidation();
       }
     },
   },
   computed: {
+    users() {
+      return this.$store.state.users;
+    },
     successMsg() {
       return this.success ? ["Username is available."] : [];
     },
