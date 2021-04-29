@@ -37,6 +37,7 @@
             color="accent"
             elevation="2"
             class="mt-lg-0 mt-md-3 mt-3"
+            @click="createAccount"
             >Create Account</v-btn
           >
         </v-card>
@@ -135,6 +136,15 @@ export default {
     handleInputChanges() {
       this.success = false;
       this.error = false;
+    },
+    async createAccount() {
+      const data = JSON.stringify({ data: { name: this.username } });
+
+      const response = await this.req.make("POST", "/api/v1/accounts", data);
+
+      if (response.status === 200) {
+        this.username = "";
+      }
     },
   },
   computed: {

@@ -1,45 +1,35 @@
 <template>
-  <v-col>
-    <v-tabs v-model="selectedTab" fixed-tabs>
-      <v-tabs-slider></v-tabs-slider>
-      <v-tab
-        class="primary--text"
-        v-for="(tab, i) in tabs"
-        :key="`tabs-${i}`"
-        :href="`#tabs-${i}`"
-      >
-        {{ tab.title }}
-      </v-tab>
-    </v-tabs>
-
+  <BaseTabs
+    :tabsArray="tabs"
+    :currentTab="currentTab"
+    @selected-tab="handleTabSelection"
+  >
     <form>
-      <v-tabs-items v-model="selectedTab">
-        <v-tab-item value="tabs-0">
-          <v-card flat>
-            <v-card-text>In Add Funds</v-card-text>
-          </v-card>
-        </v-tab-item>
-        <v-tab-item value="tabs-1">
-          <v-card flat>
-            <v-card-text>In Send Funds</v-card-text>
-          </v-card>
-        </v-tab-item>
-        <v-tab-item value="tabs-2">
-          <v-card flat>
-            <v-card-text>In Remove Funds</v-card-text>
-          </v-card>
-        </v-tab-item>
-      </v-tabs-items>
+      <BaseTabItem value="tabs-0">
+        <v-card-text>In Add Funds</v-card-text>
+      </BaseTabItem>
+      <BaseTabItem value="tabs-1">
+        <v-card-text>In Send Funds</v-card-text>
+      </BaseTabItem>
+      <BaseTabItem value="tabs-2">
+        <v-card-text>In Remove Funds</v-card-text>
+      </BaseTabItem>
     </form>
-  </v-col>
+  </BaseTabs>
 </template>
 
 <script>
+import BaseTabs from "../components/BaseTabs/BaseTabs";
+import BaseTabItem from "../components/BaseTabs/BaseTabItems/BaseTabItem/BaseTabItem";
+
 export default {
   name: "Finance",
-  components: {},
+  components: {
+    BaseTabs,
+    BaseTabItem,
+  },
   data: () => ({
-    selectedTab: null,
+    currentTab: "tabs-0",
     tabs: [
       {
         title: "Add Funds",
@@ -57,8 +47,7 @@ export default {
   }),
   methods: {
     handleTabSelection(value) {
-      console.log(value);
-      this.selectedTab = value;
+      this.currentTab = value;
     },
   },
 };
