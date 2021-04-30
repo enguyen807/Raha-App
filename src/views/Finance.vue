@@ -8,25 +8,24 @@
       >
         <v-form ref="paymentForm" v-model="formIsValid">
           <BaseTabItem value="tabs-0">
-            <h2 v-if="!selectedUser1" class="mt-6">
+            <h2 v-if="!selectedUser1Data" class="mt-6">
               Please select a user from the table below
             </h2>
             <div v-else class="d-flex flex-column mt-5 justify-space-between">
               <v-text-field
                 label="Username"
                 disabled
-                v-model="selectedUser1['name']"
+                v-model="selectedUser1Data['name']"
               ></v-text-field>
               <v-text-field
-                label="Description"
-                v-model="description1"
-                :rules="currentTab === 'tabs-0' ? rules : []"
+                label="Description (optional)"
+                v-model="selectedUser1FormData['description']"
               ></v-text-field>
               <v-text-field
                 type="number"
-                label="Balance"
-                v-model.number="selectedUser1['balance']"
-                ref="selectedUser1Balance"
+                label="Amount to Add"
+                v-model.number="selectedUser1FormData['amount']"
+                ref="selectedUser1Amount"
                 :rules="currentTab === 'tabs-0' ? rules : []"
                 min="0"
                 @keypress="onlyNumbers"
@@ -44,10 +43,66 @@
             </div>
           </BaseTabItem>
           <BaseTabItem value="tabs-1">
-            <v-card-text>In Send Funds</v-card-text>
-            <v-card-text>Name</v-card-text>
-            <v-card-text>Description</v-card-text>
-            <v-card-text>Amount</v-card-text>
+            <h2 v-if="!selectedUser2Data" class="mt-6">
+              Please select two users from the table below
+            </h2>
+            <div v-else class="d-flex flex-column mt-5 justify-space-between">
+              <div>
+                <h3>Transfer Funds from {{ selectedUser1Data["name"] }}</h3>
+                <v-text-field
+                  label="Username"
+                  disabled
+                  v-model="selectedUser1Data['name']"
+                ></v-text-field>
+                <v-text-field
+                  label="Description (optional)"
+                  v-model="selectedUser1FormData['description']"
+                ></v-text-field>
+                <v-text-field
+                  type="number"
+                  disabled
+                  label="Current Balance"
+                  v-model.number="selectedUser1Data['balance']"
+                  min="0"
+                ></v-text-field>
+                <v-text-field
+                  type="number"
+                  label="Amount to send"
+                  v-model.number="selectedUser1FormData['amount']"
+                  ref="selectedUser1Amount"
+                  :rules="currentTab === 'tabs-1' ? balanceFieldRules : []"
+                  min="0"
+                  :max="selectedUser1Data['balance']"
+                  @keypress="onlyNumbers"
+                ></v-text-field>
+              </div>
+
+              <div>
+                <h3>{{ selectedUser2Data["name"] }} receives the following:</h3>
+                <v-text-field
+                  label="Username"
+                  disabled
+                  v-model="selectedUser2Data['name']"
+                ></v-text-field>
+                <v-text-field
+                  type="number"
+                  disabled
+                  label="Amount to recieve"
+                  v-model.number="selectedUser1FormData['amount']"
+                  min="0"
+                ></v-text-field>
+              </div>
+
+              <v-btn
+                :disabled="!formIsValid"
+                light
+                color="accent"
+                elevation="2"
+                block
+                @click="handleSendFunds"
+                >Send Funds</v-btn
+              >
+            </div>
           </BaseTabItem>
           <BaseTabItem value="tabs-2">
             <v-card-text>In Remove Funds</v-card-text>
@@ -105,9 +160,16 @@ export default {
       },
     ],
     formIsValid: true,
-    selectedUser1: null,
-    description1: "",
-    selectedUser2: null,
+    selectedUser1Data: null,
+    selectedUser1FormData: {
+      amount: 0,
+      description: "",
+    },
+    selectedUser2Data: null,
+    selectedUser2FormData: {
+      amount: 0,
+      description: "",
+    },
     description2: "",
     rules: [(value) => !!value || "Required."],
   }),
@@ -115,43 +177,141 @@ export default {
     this.$store.dispatch("getUsers");
   },
   methods: {
-    ...mapActions("finance", ["updatePayment"]),
+    ...mapActions("finance", ["addPayment", "updateBalances"]),
+    getIndex(id) {
+      const remitterIndex = this.users.findIndex((u) => {
+        return u.id === id;
+      });
+      return remitterIndex;
+    },
     handleTabSelection(value) {
       this.currentTab = value;
+      this.selectedUser1FormData["amount"] = 0;
     },
     handleUserSelection(value) {
       // console.log(value);
       this.$refs.paymentForm.validate();
-      this.selectedUser1 = value[0];
-      this.selectedUser2 = value.length > 1 ? value[1] : {};
+      this.selectedUser1Data = value[0];
+      this.selectedUser2Data = value.length > 1 ? value[1] : null;
+      return value;
     },
     async handleAddFunds() {
-      const { selectedUser1 } = this;
-      const { balance, id, name, number } = selectedUser1;
+      const { selectedUser1Data, selectedUser1FormData } = this;
+      const { balance, id, name, number } = selectedUser1Data;
+      const { amount, description } = selectedUser1FormData;
+      const beneficiaryIndex = this.getIndex(id);
+
+      console.log(balance);
 
       const data = JSON.stringify({
         data: {
-          amount: balance,
+          amount: amount,
           type_key: "incoming",
           beneficiary_account_id: id,
           remitter_name: name,
           remitter_account_number: number,
+          description: description,
         },
       });
 
+      console.log(data);
+
       try {
         const response = await this.req.make("POST", "/api/v1/payments", data);
+
+        console.log(response);
         if (response.status === 201) {
-          this.updatePayment(response);
+          this.addPayment(response);
+          this.users[beneficiaryIndex].balance += amount;
         }
       } catch (e) {
-        this.updatePayment(e.response);
+        this.addPayment(e.response);
+      }
+    },
+    async handleSendFunds() {
+      const {
+        selectedUser1Data,
+        selectedUser1FormData,
+        selectedUser2Data,
+      } = this;
+      const {
+        balance: user1Balance,
+        id: user1Id,
+        name: user1Name,
+        number: user1Number,
+      } = selectedUser1Data;
+      const {
+        balance: user2Balance,
+        id: user2Id,
+        name: user2Name,
+        number: user2Number,
+      } = selectedUser2Data;
+      const { amount, description } = selectedUser1FormData;
+      const remitterIndex = this.getIndex(user1Id);
+      const beneficiaryIndex = this.getIndex(user2Id);
+
+      const data = JSON.stringify({
+        data: {
+          amount: amount,
+          description: description,
+          type_key: "internal",
+          remitter_account_id: user1Id,
+          beneficiary_account_id: user2Id,
+        },
+      });
+
+      console.log(data);
+
+      try {
+        const response = await this.req.make("POST", "/api/v1/payments", data);
+
+        console.log(response);
+        if (response.status === 201) {
+          this.updateBalances(response);
+          this.users[remitterIndex].balance -= amount;
+          this.users[beneficiaryIndex].balance += amount;
+        }
+      } catch (e) {
+        this.updateBalances(e.response);
+      }
+    },
+    async handleRemoveFunds() {
+      const { selectedUser1Data, selectedUser1FormData } = this;
+      const { balance, id, name, number } = selectedUser1Data;
+      const { amount, description } = selectedUser1FormData;
+      const remitterIndex = this.getIndex(id);
+
+      console.log(balance);
+
+      const data = JSON.stringify({
+        data: {
+          amount: amount,
+          type_key: "outgoing",
+          remitter_account_id: id,
+          beneficiary_name: name,
+          beneficiary_account_number: number,
+          description: description,
+        },
+      });
+
+      console.log(data);
+
+      try {
+        const response = await this.req.make("POST", "/api/v1/payments", data);
+
+        console.log(response);
+        if (response.status === 201) {
+          this.addPayment(response);
+          this.users[beneficiaryIndex].balance += amount;
+        }
+      } catch (e) {
+        this.addPayment(e.response);
       }
     },
     onlyNumbers(e) {
       // console.log(e);
       // Get value from input field and convert value from Number to String
-      const balance = this.$refs.selectedUser1Balance.value.toString();
+      const amount = this.$refs.selectedUser1Amount.value.toString();
       // console.log(balance);
       let keyCode = e.keyCode ? e.keyCode : e.which;
       // console.log(keyCode);
@@ -161,7 +321,7 @@ export default {
         e.preventDefault();
       }
       // Limits decimal field to two decimal points
-      if (balance.indexOf(".") > -1 && balance.split(".")[1].length > 1) {
+      if (amount.indexOf(".") > -1 && amount.split(".")[1].length > 1) {
         e.preventDefault();
       }
     },
@@ -173,6 +333,15 @@ export default {
     },
     getDataTableHeaders() {
       return this.$store.getters.getDataTableHeaders;
+    },
+    balanceFieldRules() {
+      const rules = [(v) => !!v || "Required."];
+
+      const rule = (v) =>
+        (v || "") <= this.selectedUser1Data["balance"] ||
+        "You do not have enough funds to send this amount!";
+      rules.push(rule);
+      return rules;
     },
   },
 };

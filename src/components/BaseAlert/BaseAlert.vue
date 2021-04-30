@@ -35,4 +35,9 @@ export default {
 </script>
 
 <style>
+.v-alert {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+}
 </style>
