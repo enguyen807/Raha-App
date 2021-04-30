@@ -1,29 +1,70 @@
 <template>
   <div>
-    <BaseTabs
-      :tabsArray="tabs"
-      :currentTab="currentTab"
-      @selected-tab="handleTabSelection"
-    >
-      <form>
-        <BaseTabItem value="tabs-0">
-          <v-card-text>Add Funds</v-card-text>
-          <v-card-text>Description</v-card-text>
-          <v-card-text>Amount</v-card-text>
-        </BaseTabItem>
-        <BaseTabItem value="tabs-1">
-          <v-card-text>In Send Funds</v-card-text>
-          <v-card-text>Description</v-card-text>
-          <v-card-text>Amount</v-card-text>
-        </BaseTabItem>
-        <BaseTabItem value="tabs-2">
-          <v-card-text>In Remove Funds</v-card-text>
-          <v-card-text>Description</v-card-text>
-          <v-card-text>Amount</v-card-text>
-        </BaseTabItem>
-      </form>
-    </BaseTabs>
-    dsafsdf
+    <v-col cols="12">
+      <BaseTabs
+        :tabs-array="tabs"
+        :current-tab="currentTab"
+        @selected-tab="handleTabSelection"
+      >
+        <v-form ref="paymentForm" v-model="formIsValid" lazy-validation>
+          <BaseTabItem value="tabs-0">
+            <h2 v-if="!selectedUser1">Please select a user</h2>
+            <div v-else class="d-flex flex-column mt-5 justify-space-between">
+              <v-text-field
+                label="Username"
+                disabled
+                v-model="selectedUser1['name']"
+              ></v-text-field>
+              <v-text-field
+                label="Description"
+                v-model="description1"
+                :rules="currentTab === 'tabs-0' ? rules : []"
+              ></v-text-field>
+              <v-text-field
+                type="number"
+                label="Balance"
+                v-model.number="selectedUser1['balance']"
+                ref="selectedUser1Balance"
+                :rules="currentTab === 'tabs-0' ? rules : []"
+                min="0"
+                @keypress="onlyNumbers"
+              ></v-text-field>
+
+              <v-btn
+                :disabled="!formIsValid"
+                light
+                color="accent"
+                elevation="2"
+                block
+                >Add Funds to Account</v-btn
+              >
+            </div>
+          </BaseTabItem>
+          <BaseTabItem value="tabs-1">
+            <v-card-text>In Send Funds</v-card-text>
+            <v-card-text>Name</v-card-text>
+            <v-card-text>Description</v-card-text>
+            <v-card-text>Amount</v-card-text>
+          </BaseTabItem>
+          <BaseTabItem value="tabs-2">
+            <v-card-text>In Remove Funds</v-card-text>
+            <v-card-text>Name</v-card-text>
+            <v-card-text>Description</v-card-text>
+            <v-card-text>Amount</v-card-text>
+          </BaseTabItem>
+        </v-form>
+      </BaseTabs>
+    </v-col>
+    <v-col cols="12">
+      <BaseDataTable
+        :data-table-headers="getDataTableHeaders"
+        :max-selected-items="currentTab !== 'tabs-0' ? 2 : 1"
+        :items="users"
+        :single-select="false"
+        :current-tab="currentTab"
+        @selected-items="handleUserSelection"
+      />
+    </v-col>
   </div>
 </template>
 
@@ -31,11 +72,14 @@
 import BaseTabs from "../components/BaseTabs/BaseTabs";
 import BaseTabItem from "../components/BaseTabs/BaseTabItems/BaseTabItem/BaseTabItem";
 
+import BaseDataTable from "../components/BaseDataTable/BaseDataTable";
+
 export default {
   name: "Finance",
   components: {
     BaseTabs,
     BaseTabItem,
+    BaseDataTable,
   },
   data: () => ({
     currentTab: "tabs-0",
@@ -53,10 +97,47 @@ export default {
         icon: "",
       },
     ],
+    formIsValid: true,
+    selectedUser1: null,
+    description1: "",
+    selectedUser2: null,
+    description2: "",
+    rules: [(value) => !!value || "Required."],
   }),
   methods: {
     handleTabSelection(value) {
       this.currentTab = value;
+    },
+    handleUserSelection(value) {
+      // console.log(value);
+      this.$refs.paymentForm.validate();
+      this.selectedUser1 = value[0];
+      this.selectedUser2 = value.length > 1 ? value[1] : {};
+    },
+    onlyNumbers(e) {
+      // console.log(e);
+      // Get value from input field and convert value from Number to String
+      const balance = this.$refs.selectedUser1Balance.value.toString();
+      // console.log(balance);
+      let keyCode = e.keyCode ? e.keyCode : e.which;
+      // console.log(keyCode);
+      // Prevent all non number characters
+      if ((keyCode < 48 || keyCode > 57) && keyCode !== 46) {
+        // 46 is dot
+        e.preventDefault();
+      }
+      // Limits decimal field to two decimal points
+      if (balance.indexOf(".") > -1 && balance.split(".")[1].length > 1) {
+        e.preventDefault();
+      }
+    },
+  },
+  computed: {
+    users() {
+      return this.$store.state.users;
+    },
+    getDataTableHeaders() {
+      return this.$store.getters.getDataTableHeaders;
     },
   },
 };

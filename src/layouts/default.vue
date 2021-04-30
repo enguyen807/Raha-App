@@ -8,7 +8,7 @@
 
     <BaseToolbar
       @toggle-drawer="handleDrawer"
-      :isMobile="isMobile"
+      :is-mobile="isMobile"
       title="Raha App"
     >
       <template #toolbar-items>

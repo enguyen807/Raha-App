@@ -7,7 +7,22 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     users: [],
+    dataTableHeaders: [
+      {
+        text: "User",
+        value: "name",
+      },
+      {
+        text: "Balance",
+        value: "balance",
+      },
+    ],
     req: new Request(),
+  },
+  getters: {
+    getDataTableHeaders: (state) => {
+      return state.dataTableHeaders;
+    },
   },
   mutations: {
     SET_USERS(state, users) {

@@ -26,7 +26,7 @@
                   color="info"
                   elevation="2"
                   :disabled="!formIsValid || !username"
-                  @click="saveUser"
+                  @click="checkIfUsernameIsAvailable"
                   >Check Username</v-btn
                 >
               </v-col>
@@ -48,37 +48,21 @@
       <v-divider vertical></v-divider>
       <v-col cols="12" md="8">
         <!-- Todo: Add ability to change user's name or delete users -->
-        <v-card class="pa-2" outlined tile>
-          <v-card-title>
-            <v-text-field
-              v-model="search"
-              append-icon="mdi-magnify"
-              label="Search"
-              single-line
-              hide-details
-            ></v-text-field>
-          </v-card-title>
-          <v-data-table
-            v-model="selected"
-            :headers="headers"
-            :items="users"
-            item-key="id"
-            single-select
-            show-select
-            :search="search"
-          >
-          </v-data-table>
-        </v-card>
+        <BaseDataTable :dataTableHeaders="getDataTableHeaders" :items="users" />
       </v-col>
     </v-layout>
   </v-col>
 </template>
 
 <script>
+import BaseDataTable from "../components/BaseDataTable/BaseDataTable";
 import Request from "../api/index";
 
 export default {
   name: "User",
+  components: {
+    BaseDataTable,
+  },
   data: () => ({
     req: new Request(),
     username: null,
@@ -90,18 +74,6 @@ export default {
       (value) => !!value || "Required.",
       (value) => (value && value.length >= 5) || "Min 5 characters",
     ],
-    headers: [
-      {
-        text: "User",
-        value: "name",
-      },
-      {
-        text: "Balance",
-        value: "balance",
-      },
-    ],
-    selected: [],
-    search: "",
   }),
   methods: {
     async checkIfUsernameIsAvailable() {
@@ -128,7 +100,6 @@ export default {
       this.success = false;
       this.error = false;
     },
-    saveUser() {},
     async createAccount() {
       const data = JSON.stringify({ data: { name: this.username } });
 
@@ -142,6 +113,9 @@ export default {
     },
   },
   computed: {
+    getDataTableHeaders() {
+      return this.$store.getters.getDataTableHeaders;
+    },
     users() {
       return this.$store.state.users;
     },
