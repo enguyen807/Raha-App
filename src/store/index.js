@@ -36,7 +36,12 @@ export default new Vuex.Store({
       const index = state.users.findIndex(
         (user) => user.id === payload.beneficiary_account_id
       );
-      Vue.set(state.users, index, payload);
+
+      const beneficiary = {
+        ...this.state.user[index],
+      };
+
+      Vue.set(state.users, index, beneficiary);
     },
     UPDATE_BALANCES(state, payload) {
       const remitterIndex = state.users.findIndex((u) => {
@@ -60,6 +65,19 @@ export default new Vuex.Store({
 
       Vue.set(state.users, remitterIndex, remitter);
       Vue.set(state.users, beneficiaryIndex, beneficiary);
+    },
+    DEDUCT_PAYMENT(state, payload) {
+      const index = state.users.findIndex(
+        (user) => user.id === payload.remitter_account_id
+      );
+
+      const remitter = {
+        ...this.state.user[index],
+      };
+
+      remitter.balance -= payload.amount;
+
+      Vue.set(state.users, index, remitter);
     },
   },
   actions: {

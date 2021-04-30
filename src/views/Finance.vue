@@ -105,18 +105,59 @@
             </div>
           </BaseTabItem>
           <BaseTabItem value="tabs-2">
-            <v-card-text>In Remove Funds</v-card-text>
-            <v-card-text>Name</v-card-text>
-            <v-card-text>Description</v-card-text>
-            <v-card-text>Amount</v-card-text>
+            <h2 v-if="!selectedUser1Data" class="mt-6">
+              Please select a user from the table below
+            </h2>
+            <div v-else class="d-flex flex-column mt-5 justify-space-between">
+              <v-text-field
+                label="Username"
+                disabled
+                v-model="selectedUser1Data['name']"
+              ></v-text-field>
+              <v-text-field
+                label="Description (optional)"
+                v-model="selectedUser1FormData['description']"
+              ></v-text-field>
+              <v-text-field
+                type="number"
+                disabled
+                label="Current Balance"
+                v-model.number="selectedUser1Data['balance']"
+                min="0"
+              ></v-text-field>
+              <v-text-field
+                type="number"
+                label="Amount to Remove from Account"
+                v-model.number="selectedUser1FormData['amount']"
+                ref="selectedUser1Amount"
+                :rules="currentTab === 'tabs-2' ? balanceFieldRules : []"
+                min="0"
+                :max="selectedUser1Data['balance']"
+                @keypress="onlyNumbers"
+              ></v-text-field>
+
+              <v-btn
+                :disabled="!formIsValid"
+                light
+                color="accent"
+                elevation="2"
+                block
+                @click="handleRemoveFunds"
+                >Remove Funds from Account</v-btn
+              >
+            </div>
           </BaseTabItem>
         </v-form>
       </BaseTabs>
     </v-col>
     <v-col cols="12">
+      <!-- 
+        if current tab equals 'send funds' tab set max selectable checkboxes to 2
+        otherwise set max selectable checkboxes to 1
+       -->
       <BaseDataTable
         :data-table-headers="getDataTableHeaders"
-        :max-selected-items="currentTab !== 'tabs-0' ? 2 : 1"
+        :max-selected-items="currentTab !== 'tabs-1' ? 1 : 2"
         :items="users"
         :single-select="false"
         :current-tab="currentTab"
@@ -177,7 +218,7 @@ export default {
     this.$store.dispatch("getUsers");
   },
   methods: {
-    ...mapActions("finance", ["addPayment", "updateBalances"]),
+    ...mapActions("finance", ["addPayment", "updateBalances", "deductPayment"]),
     getIndex(id) {
       const remitterIndex = this.users.findIndex((u) => {
         return u.id === id;
@@ -301,11 +342,11 @@ export default {
 
         console.log(response);
         if (response.status === 201) {
-          this.addPayment(response);
-          this.users[beneficiaryIndex].balance += amount;
+          this.deductPayment(response);
+          this.users[remitterIndex].balance -= amount;
         }
       } catch (e) {
-        this.addPayment(e.response);
+        this.deductPayment(e.response);
       }
     },
     onlyNumbers(e) {
@@ -339,7 +380,7 @@ export default {
 
       const rule = (v) =>
         (v || "") <= this.selectedUser1Data["balance"] ||
-        "You do not have enough funds to send this amount!";
+        "You do not have enough funds to do this action!";
       rules.push(rule);
       return rules;
     },

@@ -36,7 +36,7 @@ export default {
 
 <style>
 .v-alert {
-  position: fixed;
+  position: fixed !important;
   z-index: 1;
   width: 100%;
 }

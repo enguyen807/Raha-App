@@ -25,6 +25,16 @@ const actions = {
       });
     }
   },
+  deductPayment({ dispatch, commit }, payload) {
+    if (payload.status !== 201) {
+      dispatch("alert/error", payload.statusText, { root: true });
+    } else {
+      commit("DEDUCT_PAYMENT", payload, { root: true });
+      dispatch("alert/success", "Funds deducted successfully!", {
+        root: true,
+      });
+    }
+  },
 };
 
 export const finance = {
