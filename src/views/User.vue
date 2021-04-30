@@ -55,8 +55,10 @@
 </template>
 
 <script>
-import BaseDataTable from "../components/BaseDataTable/BaseDataTable";
 import Request from "../api/index";
+import { mapGetters } from "vuex";
+
+import BaseDataTable from "../components/BaseDataTable/BaseDataTable";
 
 export default {
   name: "User",
@@ -75,8 +77,12 @@ export default {
       (value) => (value && value.length >= 5) || "Min 5 characters",
     ],
   }),
+  mounted() {
+    this.$store.dispatch("user/getUsers");
+  },
   methods: {
     async checkIfUsernameIsAvailable() {
+      // Variable generated from Postman
       const data = JSON.stringify({ data: { name: this.username } });
 
       const response = await this.req.make(
@@ -113,17 +119,18 @@ export default {
     },
   },
   computed: {
-    getDataTableHeaders() {
-      return this.$store.getters.getDataTableHeaders;
-    },
+    ...mapGetters("user", ["getUsers"]),
     users() {
-      return this.$store.state.users;
+      return this.getUsers;
     },
     successMsg() {
       return this.success ? ["Username is available."] : [];
     },
     errorMsg() {
       return this.error ? ["Username is taken."] : [];
+    },
+    getDataTableHeaders() {
+      return this.$store.getters.getDataTableHeaders;
     },
   },
 };

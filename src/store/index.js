@@ -1,12 +1,13 @@
 import Vue from "vue";
 import Vuex, { Store } from "vuex";
-import Request from "../api/index";
+
+import { user } from "./modules/user.module";
+import { finance } from "./modules/finance.module";
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    users: [],
     dataTableHeaders: [
       {
         text: "User",
@@ -17,28 +18,16 @@ export default new Vuex.Store({
         value: "balance",
       },
     ],
-    req: new Request(),
   },
   getters: {
     getDataTableHeaders: (state) => {
       return state.dataTableHeaders;
     },
   },
-  mutations: {
-    SET_USERS(state, users) {
-      state.users = users;
-    },
+  mutations: {},
+  actions: {},
+  modules: {
+    user,
+    finance,
   },
-  actions: {
-    async getUsers({ commit }) {
-      console.log(this.state.users);
-      const response = await this.state.req.make(
-        "POST",
-        "/api/v1/accounts/search",
-        {}
-      );
-      commit("SET_USERS", response.data.data);
-    },
-  },
-  modules: {},
 });

@@ -36,6 +36,7 @@
                 color="accent"
                 elevation="2"
                 block
+                @click="handleAddFunds"
                 >Add Funds to Account</v-btn
               >
             </div>
@@ -69,6 +70,9 @@
 </template>
 
 <script>
+import Request from "../api/index";
+import { mapGetters, mapActions } from "vuex";
+
 import BaseTabs from "../components/BaseTabs/BaseTabs";
 import BaseTabItem from "../components/BaseTabs/BaseTabItems/BaseTabItem/BaseTabItem";
 
@@ -82,6 +86,7 @@ export default {
     BaseDataTable,
   },
   data: () => ({
+    req: new Request(),
     currentTab: "tabs-0",
     tabs: [
       {
@@ -104,7 +109,11 @@ export default {
     description2: "",
     rules: [(value) => !!value || "Required."],
   }),
+  mounted() {
+    this.$store.dispatch("finance/getUsers");
+  },
   methods: {
+    ...mapActions("finance", ["saveUser"]),
     handleTabSelection(value) {
       this.currentTab = value;
     },
@@ -113,6 +122,32 @@ export default {
       this.$refs.paymentForm.validate();
       this.selectedUser1 = value[0];
       this.selectedUser2 = value.length > 1 ? value[1] : {};
+    },
+    handleAddFunds() {
+      const { selectedUser1 } = this;
+      const { balance, id, name, number } = selectedUser1;
+
+      const data = JSON.stringify({
+        data: {
+          amount: balance,
+          type_key: "incoming",
+          beneficiary_account_id: id,
+          remitter_name: name,
+          remitter_account_number: number,
+        },
+      });
+
+      // this.$store.dispatch("saveUser", data);
+      this.saveuser(data);
+      // const response = await this.req.make(
+      //   "POST",
+      //   "/api/v1/payments",
+      //   data
+      // )
+
+      // if (response.status === 201) {
+
+      // }
     },
     onlyNumbers(e) {
       // console.log(e);
@@ -133,8 +168,9 @@ export default {
     },
   },
   computed: {
+    ...mapGetters("finance", ["getUsers"]),
     users() {
-      return this.$store.state.users;
+      return this.getUsers;
     },
     getDataTableHeaders() {
       return this.$store.getters.getDataTableHeaders;
