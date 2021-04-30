@@ -1,12 +1,7 @@
-import Request from "../../api/index";
-
-const state = {
-  users: [],
-  req: new Request(),
-};
+const state = {};
 const getters = {
-  getUsers(state) {
-    return state.users;
+  getUsers(state, getters, rootState) {
+    return rootState.users;
   },
 };
 const mutations = {
@@ -14,21 +9,7 @@ const mutations = {
     state.users = users;
   },
 };
-const actions = {
-  async getUsers({ dispatch, commit }) {
-    // console.log(this.state.users);
-    try {
-      const response = await state.req.make(
-        "POST",
-        "/api/v1/accounts/search",
-        {}
-      );
-      commit("SET_USERS", response.data.data);
-    } catch (e) {
-      throw e;
-    }
-  },
-};
+const actions = {};
 
 export const user = {
   namespaced: true,

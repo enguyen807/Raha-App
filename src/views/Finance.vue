@@ -6,9 +6,11 @@
         :current-tab="currentTab"
         @selected-tab="handleTabSelection"
       >
-        <v-form ref="paymentForm" v-model="formIsValid" lazy-validation>
+        <v-form ref="paymentForm" v-model="formIsValid">
           <BaseTabItem value="tabs-0">
-            <h2 v-if="!selectedUser1">Please select a user</h2>
+            <h2 v-if="!selectedUser1" class="mt-6">
+              Please select a user from the table below
+            </h2>
             <div v-else class="d-flex flex-column mt-5 justify-space-between">
               <v-text-field
                 label="Username"
@@ -110,10 +112,10 @@ export default {
     rules: [(value) => !!value || "Required."],
   }),
   mounted() {
-    this.$store.dispatch("finance/getUsers");
+    this.$store.dispatch("getUsers");
   },
   methods: {
-    ...mapActions("finance", ["saveUser"]),
+    ...mapActions("finance", ["updatePayment"]),
     handleTabSelection(value) {
       this.currentTab = value;
     },
@@ -123,7 +125,7 @@ export default {
       this.selectedUser1 = value[0];
       this.selectedUser2 = value.length > 1 ? value[1] : {};
     },
-    handleAddFunds() {
+    async handleAddFunds() {
       const { selectedUser1 } = this;
       const { balance, id, name, number } = selectedUser1;
 
@@ -137,17 +139,14 @@ export default {
         },
       });
 
-      // this.$store.dispatch("saveUser", data);
-      this.saveuser(data);
-      // const response = await this.req.make(
-      //   "POST",
-      //   "/api/v1/payments",
-      //   data
-      // )
-
-      // if (response.status === 201) {
-
-      // }
+      try {
+        const response = await this.req.make("POST", "/api/v1/payments", data);
+        if (response.status === 201) {
+          this.updatePayment(response);
+        }
+      } catch (e) {
+        this.updatePayment(e.response);
+      }
     },
     onlyNumbers(e) {
       // console.log(e);

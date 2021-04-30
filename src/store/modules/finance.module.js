@@ -1,43 +1,18 @@
-import Request from "../../api/index";
-
-const state = {
-  users: [],
-  req: new Request(),
-};
+const state = {};
 const getters = {
-  getUsers(state) {
-    return state.users;
+  getUsers(state, getters, rootState) {
+    return rootState.users;
   },
 };
-const mutations = {
-  SET_USERS(state, users) {
-    state.users = users;
-  },
-  UPDATE_USER(state, updatedUser) {
-    const index = state.users.findIndex(
-      (user) => user.id === updatedUser.beneficiary_account_id
-    );
-    Vue.set(state.users, index, updatedUser);
-  },
-};
+const mutations = {};
 const actions = {
-  async getUsers({ commit }) {
-    console.log(state.users);
-    try {
-      const response = await state.req.make(
-        "POST",
-        "/api/v1/accounts/search",
-        {}
-      );
-      commit("SET_USERS", response.data.data);
-    } catch (e) {
-      throw e;
+  updatePayment({ dispatch, commit }, payload) {
+    if (payload.status !== 201) {
+      dispatch("alert/error", payload.statusText, { root: true });
+    } else {
+      commit("UPDATE_PAYMENT", payload, { root: true });
+      dispatch("alert/success", "Funds added successfully!", { root: true });
     }
-  },
-  saveUser({ commit }, payload) {
-    console.log(payload);
-    commit("UPDATE_USER", payload);
-    store.dispatch("SET_USERS");
   },
 };
 

@@ -17,6 +17,7 @@
     </BaseToolbar>
 
     <v-main class="grey lighten-3">
+      <BaseAlert />
       <v-container>
         <v-layout row wrap>
           <v-col class="fill-height">
@@ -35,6 +36,7 @@ import BaseNavigationDrawer from "../components/BaseNavigationDrawer/BaseNavigat
 import BaseToolbar from "../components/BaseToolbar/BaseToolbar";
 import BaseList from "../components/BaseList/BaseList";
 import BaseButton from "../components/BaseButton/BaseButton";
+import BaseAlert from "../components/BaseAlert/BaseAlert";
 
 export default {
   data: () => ({
@@ -57,6 +59,7 @@ export default {
     BaseToolbar,
     BaseList,
     BaseButton,
+    BaseAlert,
   },
   methods: {
     handleDrawer() {
