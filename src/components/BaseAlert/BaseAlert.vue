@@ -1,9 +1,10 @@
 <template>
   <v-alert
-    v-if="alert.message"
-    :type="`${alert.type}`"
+    v-show="alert.showAlert"
+    :type="alert.type"
     dismissible
     transition="scale-transition"
+    @click="clearAlert"
   >
     {{ alert.message }}
   </v-alert>
@@ -13,18 +14,16 @@
 import { mapState, mapActions } from "vuex";
 
 export default {
-  data: () => ({
-    message: "",
-  }),
   watch: {
     $route() {
       this.clearAlert();
     },
   },
   methods: {
-    ...mapActions({
-      clearAlert: "alert/clear",
-    }),
+    ...mapActions("alert", ["clear"]),
+    clearAlert() {
+      this.clear();
+    },
   },
   computed: {
     ...mapState({

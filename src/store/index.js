@@ -16,11 +16,13 @@ export default new Vuex.Store({
       {
         text: "User",
         value: "name",
+        align: "start",
       },
       {
         text: "Balance",
         value: "balance",
       },
+      { text: "Actions", value: "actions", sortable: false },
     ],
   },
   getters: {
@@ -30,7 +32,7 @@ export default new Vuex.Store({
   },
   mutations: {
     SET_USERS(state, users) {
-      state.users = users;
+      state.users = [...users];
     },
     ADD_PAYMENT(state, payload) {
       const index = state.users.findIndex(
@@ -82,8 +84,6 @@ export default new Vuex.Store({
   },
   actions: {
     async getUsers({ dispatch, commit }) {
-      // console.log(this.state.users);
-
       try {
         const response = await this.state.req.make(
           "POST",
@@ -92,7 +92,9 @@ export default new Vuex.Store({
         );
         commit("SET_USERS", response.data.data);
       } catch (e) {
-        throw e;
+        setTimeout(() => {
+          dispatch("alert/error", e.response.statusText, { root: true });
+        });
       }
     },
   },

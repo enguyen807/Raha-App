@@ -31,15 +31,12 @@
                 @keypress="onlyNumbers"
               ></v-text-field>
 
-              <v-btn
-                :disabled="!formIsValid"
-                light
-                color="accent"
-                elevation="2"
-                block
-                @click="handleAddFunds"
-                >Add Funds to Account</v-btn
-              >
+              <BaseButton
+                title="Add Funds to Account"
+                :btn-color="['accent', 'black--text']"
+                :btn-disabled="!formIsValid"
+                @click.native="handleAddFunds"
+              />
             </div>
           </BaseTabItem>
           <BaseTabItem value="tabs-1">
@@ -70,7 +67,11 @@
                   label="Amount to send"
                   v-model.number="selectedUser1FormData['amount']"
                   ref="selectedUser1Amount"
-                  :rules="currentTab === 'tabs-1' ? balanceFieldRules : []"
+                  :rules="
+                    currentTab === 'tabs-1' && selectedUser1FormData
+                      ? balanceFieldRules
+                      : []
+                  "
                   min="0"
                   :max="selectedUser1Data['balance']"
                   @keypress="onlyNumbers"
@@ -93,15 +94,12 @@
                 ></v-text-field>
               </div>
 
-              <v-btn
-                :disabled="!formIsValid"
-                light
-                color="accent"
-                elevation="2"
-                block
-                @click="handleSendFunds"
-                >Send Funds</v-btn
-              >
+              <BaseButton
+                title="Send Funds"
+                :btn-color="['accent', 'black--text']"
+                :btn-disabled="!formIsValid"
+                @click.native="handleSendFunds"
+              />
             </div>
           </BaseTabItem>
           <BaseTabItem value="tabs-2">
@@ -130,21 +128,22 @@
                 label="Amount to Remove from Account"
                 v-model.number="selectedUser1FormData['amount']"
                 ref="selectedUser1Amount"
-                :rules="currentTab === 'tabs-2' ? balanceFieldRules : []"
+                :rules="
+                  currentTab === 'tabs-2' && selectedUser1FormData
+                    ? balanceFieldRules
+                    : []
+                "
                 min="0"
                 :max="selectedUser1Data['balance']"
                 @keypress="onlyNumbers"
               ></v-text-field>
 
-              <v-btn
-                :disabled="!formIsValid"
-                light
-                color="accent"
-                elevation="2"
-                block
-                @click="handleRemoveFunds"
-                >Remove Funds from Account</v-btn
-              >
+              <BaseButton
+                title="Remove Funds from Account"
+                :btn-color="['accent', 'black--text']"
+                :btn-disabled="!formIsValid"
+                @click.native="handleRemoveFunds"
+              />
             </div>
           </BaseTabItem>
         </v-form>
@@ -162,6 +161,7 @@
         :single-select="false"
         :current-tab="currentTab"
         @selected-items="handleUserSelection"
+        :show-select="true"
       />
     </v-col>
   </div>
@@ -173,6 +173,7 @@ import { mapGetters, mapActions } from "vuex";
 
 import BaseTabs from "../components/BaseTabs/BaseTabs";
 import BaseTabItem from "../components/BaseTabs/BaseTabItems/BaseTabItem/BaseTabItem";
+import BaseButton from "../components/BaseButton/BaseButton";
 
 import BaseDataTable from "../components/BaseDataTable/BaseDataTable";
 
@@ -182,6 +183,7 @@ export default {
     BaseTabs,
     BaseTabItem,
     BaseDataTable,
+    BaseButton,
   },
   data: () => ({
     req: new Request(),
@@ -227,6 +229,10 @@ export default {
     },
     handleTabSelection(value) {
       this.currentTab = value;
+      // Sets both array to empty on tab change
+      this.selectedUser1Data = null;
+      this.selectedUser2Data = null;
+      // Reset amount form field on tab change
       this.selectedUser1FormData["amount"] = 0;
     },
     handleUserSelection(value) {
@@ -377,7 +383,8 @@ export default {
     },
     balanceFieldRules() {
       const rules = [(v) => !!v || "Required."];
-
+      if (this.selectedUser1Data) return;
+      // balance doesn't exist
       const rule = (v) =>
         (v || "") <= this.selectedUser1Data["balance"] ||
         "You do not have enough funds to do this action!";

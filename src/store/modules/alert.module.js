@@ -3,6 +3,7 @@
 const state = {
   type: null,
   message: null,
+  showAlert: false,
 };
 
 const actions = {
@@ -19,14 +20,17 @@ const actions = {
 
 const mutations = {
   success(state, message) {
+    state.showAlert = true;
     state.type = "success";
     state.message = message;
   },
   error(state, message) {
+    state.showAlert = true;
     state.type = "error";
     state.message = message;
   },
   clear(state) {
+    state.showAlert = false;
     state.type = null;
     state.message = null;
   },

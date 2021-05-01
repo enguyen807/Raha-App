@@ -19,36 +19,35 @@
                 ></v-text-field>
               </v-col>
               <v-col cols="12" lg="3">
-                <v-btn
-                  block
-                  small
-                  light
-                  color="info"
-                  elevation="2"
-                  :disabled="!formIsValid || !username"
-                  @click="checkIfUsernameIsAvailable"
-                  >Check Username</v-btn
-                >
+                <BaseButton
+                  title="Check Username"
+                  btn-small
+                  :btn-color="['info']"
+                  :btn-disabled="!formIsValid || !username"
+                  @click.native="checkIfUsernameIsAvailable"
+                />
               </v-col>
             </v-row>
-            <v-btn
-              :disabled="!formIsValid || !isUsernameAvailable ? true : false"
-              block
-              small
-              light
-              color="accent"
-              elevation="2"
-              class="mt-lg-0 mt-md-3 mt-3"
-              @click="createAccount"
-              >Create Account</v-btn
-            >
+            <BaseButton
+              title="Create Account"
+              btn-small
+              :btn-color="['accent', 'black--text']"
+              :btn-class="['mt-lg-0', 'mt-md-3', 'mt-3']"
+              :btn-disabled="
+                !formIsValid || !isUsernameAvailable ? true : false
+              "
+              @click.native="createAccount"
+            />
           </v-form>
         </v-card>
       </v-col>
       <v-divider vertical></v-divider>
       <v-col cols="12" md="8">
         <!-- Todo: Add ability to change user's name or delete users -->
-        <BaseDataTable :dataTableHeaders="getDataTableHeaders" :items="users" />
+        <BaseDataTable
+          :data-table-headers="getDataTableHeaders"
+          :items="users"
+        />
       </v-col>
     </v-layout>
   </v-col>
@@ -59,11 +58,13 @@ import Request from "../api/index";
 import { mapGetters } from "vuex";
 
 import BaseDataTable from "../components/BaseDataTable/BaseDataTable";
+import BaseButton from "../components/BaseButton/BaseButton";
 
 export default {
   name: "User",
   components: {
     BaseDataTable,
+    BaseButton,
   },
   data: () => ({
     req: new Request(),

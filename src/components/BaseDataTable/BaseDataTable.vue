@@ -15,12 +15,11 @@
       :items="items"
       :single-select="singleSelect"
       item-key="id"
-      show-select
+      :show-select="showSelect"
       :search="search"
     >
-      <template
-        v-slot:[`item.data-table-select`]="{ isSelected, select, item }"
-      >
+      <!-- Custom Checkbox Named Slots -->
+      <template #[`item.data-table-select`]="{ isSelected, select, item }">
         <v-simple-checkbox
           :value="isSelected"
           :readonly="
@@ -32,6 +31,13 @@
           @input="select($event)"
           v-ripple
         ></v-simple-checkbox>
+      </template>
+      <!-- Custom Actions Named Slots -->
+      <template #[`item.actions`]="{ item }">
+        <v-btn class="ma-2" color="accent" dark>
+          Accept
+          <v-icon dark right> mdi-checkbox-marked-circle </v-icon>
+        </v-btn>
       </template>
     </v-data-table>
   </v-card>
@@ -46,6 +52,7 @@ export default {
     },
     items: {
       type: Array,
+      required: true,
     },
     singleSelect: {
       type: Boolean,
@@ -58,9 +65,14 @@ export default {
     currentTab: {
       type: String,
     },
+    showSelect: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: () => ({
     selected: [],
+    expanded: [],
     search: "",
   }),
   watch: {
