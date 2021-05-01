@@ -22,6 +22,7 @@
                 <BaseButton
                   title="Check Username"
                   btn-small
+                  btn-block
                   :btn-color="['info']"
                   :btn-disabled="!formIsValid || !username"
                   @click.native="checkIfUsernameIsAvailable"
@@ -31,6 +32,7 @@
             <BaseButton
               title="Create Account"
               btn-small
+              btn-block
               :btn-color="['accent', 'black--text']"
               :btn-class="['mt-lg-0', 'mt-md-3', 'mt-3']"
               :btn-disabled="

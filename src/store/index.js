@@ -14,13 +14,14 @@ export default new Vuex.Store({
     users: [],
     dataTableHeaders: [
       {
-        text: "User",
+        text: "Name",
         value: "name",
-        align: "start",
+        sortable: true,
       },
       {
         text: "Balance",
         value: "balance",
+        sortable: true,
       },
       { text: "Actions", value: "actions", sortable: false },
     ],

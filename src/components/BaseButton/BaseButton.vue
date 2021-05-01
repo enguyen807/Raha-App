@@ -1,24 +1,25 @@
 <template>
-  <div class="baseButton__wrapper">
-    <div v-if="links">
+  <span class="baseButton__wrapper">
+    <span v-if="links">
       <v-btn v-for="link in links" :to="link['href']" :key="link['title']" text>
         <span class="mr-2">{{ link["title"] }}</span>
         <v-icon>{{ link["icon"] }}</v-icon>
       </v-btn>
-    </div>
-    <div v-else>
+    </span>
+    <span v-else>
       <v-btn
-        block
+        :block="btnBlock"
         :small="btnSmall"
         elevation="2"
         :color="btnColor.join(' ')"
         :disabled="btnDisabled"
+        :to="href"
       >
         <span class="mr-2">{{ title }}</span>
-        <v-icon>{{ icon }}</v-icon>
+        <v-icon v-if="icon" right>{{ icon }}</v-icon>
       </v-btn>
-    </div>
-  </div>
+    </span>
+  </span>
 </template>
 
 <script>
@@ -33,6 +34,13 @@ export default {
     },
     icon: {
       type: String,
+    },
+    href: {
+      type: String,
+    },
+    btnBlock: {
+      type: Boolean,
+      default: false,
     },
     btnSmall: {
       type: Boolean,

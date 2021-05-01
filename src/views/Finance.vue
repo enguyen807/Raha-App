@@ -33,6 +33,7 @@
 
               <BaseButton
                 title="Add Funds to Account"
+                btn-block
                 :btn-color="['accent', 'black--text']"
                 :btn-disabled="!formIsValid"
                 @click.native="handleAddFunds"
@@ -96,6 +97,7 @@
 
               <BaseButton
                 title="Send Funds"
+                btn-block
                 :btn-color="['accent', 'black--text']"
                 :btn-disabled="!formIsValid"
                 @click.native="handleSendFunds"
@@ -140,6 +142,7 @@
 
               <BaseButton
                 title="Remove Funds from Account"
+                btn-block
                 :btn-color="['accent', 'black--text']"
                 :btn-disabled="!formIsValid"
                 @click.native="handleRemoveFunds"

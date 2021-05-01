@@ -12,12 +12,35 @@
     <v-data-table
       v-model="selected"
       :headers="dataTableHeaders"
+      hide-default-header
       :items="items"
       :single-select="singleSelect"
       item-key="id"
       :show-select="showSelect"
       :search="search"
     >
+      <template #header="{ props: { headers } }">
+        <thead class="v-data-table-header">
+          <tr>
+            <th
+              v-for="header in headers"
+              :key="header.value"
+              :width="`${100 / headers.length - 1}%`"
+              class="column"
+              v-bind:class="[
+                header.sortable ? 'sortable' : '',
+                sortBy == header.value ? 'active' : '',
+                descending ? 'desc' : 'asc',
+              ]"
+              @click="header.sortable ? handleSort(header.value) : ''"
+            >
+              {{ header.text }}
+              <v-icon class="v-data-table-header__icon">mdi-chevron-up </v-icon>
+            </th>
+          </tr>
+        </thead>
+      </template>
+      <template #[`header.data-table-select`]="{}"> </template>
       <!-- Custom Checkbox Named Slots -->
       <template #[`item.data-table-select`]="{ isSelected, select, item }">
         <v-simple-checkbox
@@ -34,16 +57,21 @@
       </template>
       <!-- Custom Actions Named Slots -->
       <template #[`item.actions`]="{ item }">
-        <v-btn class="ma-2" color="accent" dark>
-          Accept
-          <v-icon dark right> mdi-checkbox-marked-circle </v-icon>
-        </v-btn>
+        <BaseButton
+          title="View Transaction History"
+          icon="mdi-eye"
+          :btn-color="['accent', 'black--text']"
+          :btn-class="['ma-2']"
+          :href="`/user/${item.id}`"
+        />
       </template>
     </v-data-table>
   </v-card>
 </template>
 
 <script>
+import BaseButton from "../BaseButton/BaseButton";
+
 export default {
   props: {
     dataTableHeaders: {
@@ -70,11 +98,50 @@ export default {
       default: false,
     },
   },
+  components: {
+    BaseButton,
+  },
   data: () => ({
+    sortBy: null,
+    descending: false,
     selected: [],
     expanded: [],
     search: "",
   }),
+  methods: {
+    handleSort(column) {
+      this.descending = !this.descending;
+
+      if (this.sortBy === column) {
+        this.sortItems();
+      } else {
+        this.sortBy = column;
+        this.descending = false;
+        this.sortItems();
+      }
+    },
+    sortItems() {
+      const { sortBy, descending } = this;
+      let items = this.items;
+
+      if (sortBy) {
+        items.sort((a, b) => {
+          const sortA = a[sortBy].toString().toLowerCase();
+          const sortB = b[sortBy].toString().toLowerCase();
+
+          if (descending) {
+            if (sortA < sortB) return 1;
+            if (sortA > sortB) return -1;
+            return 0;
+          } else {
+            if (sortA < sortB) return -1;
+            if (sortA > sortB) return 1;
+            return 0;
+          }
+        });
+      }
+    },
+  },
   watch: {
     selected() {
       this.$emit("selected-items", this.selected);
@@ -87,12 +154,6 @@ export default {
 </script>
 
 <style lang="scss">
-th {
-  div.v-simple-checkbox {
-    display: none;
-  }
-}
-
 .v-simple-checkbox--disabled {
   cursor: not-allowed !important;
 }
