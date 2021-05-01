@@ -21,7 +21,7 @@
       <v-container>
         <v-layout row wrap>
           <v-col class="fill-height">
-            <v-sheet min-height="70vh" rounded="lg">
+            <v-sheet min-height="70vh" rounded="lg" elevation="12">
               <slot></slot>
             </v-sheet>
           </v-col>

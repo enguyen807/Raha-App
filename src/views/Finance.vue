@@ -194,15 +194,15 @@ export default {
     tabs: [
       {
         title: "Add Funds",
-        icon: "",
+        icon: "mdi-plus",
       },
       {
         title: "Send Funds",
-        icon: "",
+        icon: "mdi-swap-horizontal",
       },
       {
         title: "Remove Funds",
-        icon: "",
+        icon: "mdi-minus",
       },
     ],
     formIsValid: true,

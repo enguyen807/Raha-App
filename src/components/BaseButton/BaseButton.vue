@@ -2,8 +2,8 @@
   <span class="baseButton__wrapper">
     <span v-if="links">
       <v-btn v-for="link in links" :to="link['href']" :key="link['title']" text>
-        <span class="mr-2">{{ link["title"] }}</span>
         <v-icon>{{ link["icon"] }}</v-icon>
+        <span class="ml-2">{{ link["title"] }}</span>
       </v-btn>
     </span>
     <span v-else>
@@ -15,8 +15,8 @@
         :disabled="btnDisabled"
         :to="href"
       >
-        <span class="mr-2">{{ title }}</span>
         <v-icon v-if="icon" right>{{ icon }}</v-icon>
+        <span class="ml-2">{{ title }}</span>
       </v-btn>
     </span>
   </span>

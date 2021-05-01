@@ -35,7 +35,9 @@
               @click="header.sortable ? handleSort(header.value) : ''"
             >
               {{ header.text }}
-              <v-icon class="v-data-table-header__icon">mdi-chevron-up </v-icon>
+              <v-icon v-if="header.sortable" class="v-data-table-header__icon"
+                >mdi-chevron-up
+              </v-icon>
             </th>
           </tr>
         </thead>
@@ -126,8 +128,14 @@ export default {
 
       if (sortBy) {
         items.sort((a, b) => {
-          const sortA = a[sortBy].toString().toLowerCase();
-          const sortB = b[sortBy].toString().toLowerCase();
+          const sortA =
+            typeof a[sortBy] === "number"
+              ? a[sortBy]
+              : a[sortBy].toString().toLowerCase();
+          const sortB =
+            typeof b[sortBy] === "number"
+              ? b[sortBy]
+              : b[sortBy].toString().toLowerCase();
 
           if (descending) {
             if (sortA < sortB) return 1;

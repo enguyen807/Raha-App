@@ -56,11 +56,11 @@
 </template>
 
 <script>
-import Request from "../api/index";
+import Request from "../../api/index";
 import { mapGetters } from "vuex";
 
-import BaseDataTable from "../components/BaseDataTable/BaseDataTable";
-import BaseButton from "../components/BaseButton/BaseButton";
+import BaseDataTable from "../../components/BaseDataTable/BaseDataTable";
+import BaseButton from "../../components/BaseButton/BaseButton";
 
 export default {
   name: "User",

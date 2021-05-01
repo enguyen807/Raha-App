@@ -1,6 +1,6 @@
 <template>
   <v-col>
-    <v-tabs fixed-tabs>
+    <v-tabs fixed-tabs class="mb-6">
       <v-tabs-slider></v-tabs-slider>
       <v-tab
         class="primary--text"
@@ -9,7 +9,8 @@
         :value="`tabs-${i}`"
         @click="$emit('selected-tab', `tabs-${i}`)"
       >
-        {{ tab.title }}
+        <v-icon class="primary--text">{{ tab.icon }}</v-icon>
+        <span class="ml-2">{{ tab.title }}</span>
       </v-tab>
     </v-tabs>
 
