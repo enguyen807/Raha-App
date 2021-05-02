@@ -27,7 +27,7 @@ const actions = {
     } else {
       commit("UPDATE_BALANCES", payload, { root: true });
       setTimeout(() => {
-        dispatch("alert/success", "Funds added successfully!", {
+        dispatch("alert/success", "Funds sent successfully!", {
           root: true,
         });
       });

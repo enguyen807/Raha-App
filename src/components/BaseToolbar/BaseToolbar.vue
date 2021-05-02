@@ -5,7 +5,9 @@
       @click="$emit('toggle-drawer')"
     ></v-app-bar-nav-icon>
 
-    <v-toolbar-title>{{ title }}</v-toolbar-title>
+    <v-toolbar-title
+      ><a color="white--text" href="/">{{ title }}</a></v-toolbar-title
+    >
 
     <v-spacer></v-spacer>
 
@@ -23,9 +25,18 @@ export default {
     title: {
       type: String,
     },
+    href: {
+      type: String,
+    },
   },
 };
 </script>
 
-<style>
+<style lang="scss">
+.v-toolbar__title {
+  a {
+    color: white !important;
+    text-decoration: none;
+  }
+}
 </style>

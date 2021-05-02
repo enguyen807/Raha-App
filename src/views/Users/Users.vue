@@ -11,10 +11,10 @@
                   v-model="username"
                   label="Username"
                   :rules="rules"
-                  :success="success"
-                  :success-messages="successMsg"
-                  :error="error"
-                  :error-messages="errorMsg"
+                  :success="createUserSuccess"
+                  :success-messages="createUserSuccessMsg"
+                  :error="createUserError"
+                  :error-messages="createUserErrorMsg"
                   @input="handleInputChanges"
                 ></v-text-field>
               </v-col>
@@ -57,13 +57,13 @@
 
 <script>
 import Request from "../../api/index";
-import { mapGetters } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 import BaseDataTable from "../../components/BaseDataTable/BaseDataTable";
 import BaseButton from "../../components/BaseButton/BaseButton";
 
 export default {
-  name: "User",
+  name: "Users",
   components: {
     BaseDataTable,
     BaseButton,
@@ -72,8 +72,8 @@ export default {
     req: new Request(),
     username: null,
     isUsernameAvailable: false,
-    success: false,
-    error: false,
+    createUserSuccess: false,
+    createUserError: false,
     formIsValid: true,
     rules: [
       (value) => !!value || "Required.",
@@ -84,40 +84,50 @@ export default {
     this.$store.dispatch("getUsers");
   },
   methods: {
+    ...mapActions("alert", ["error", "success"]),
     async checkIfUsernameIsAvailable() {
       // Variable generated from Postman
       const data = JSON.stringify({ data: { name: this.username } });
 
-      const response = await this.req.make(
-        "POST",
-        "/api/v1/accounts/search",
-        data
-      );
+      try {
+        const response = await this.req.make(
+          "POST",
+          "/api/v1/accounts/search",
+          data
+        );
 
-      if (response.data.data.length === 0) {
-        this.isUsernameAvailable = true;
-        this.success = true;
-        this.error = false;
-      } else {
-        this.isUsernameAvailable = false;
-        this.success = false;
-        this.error = true;
+        if (response.data.data.length === 0) {
+          this.isUsernameAvailable = true;
+          this.createUserSuccess = true;
+          this.createUserError = false;
+        } else {
+          this.isUsernameAvailable = false;
+          this.createUserSuccess = false;
+          this.createUserError = true;
+        }
+      } catch (error) {
+        this.error(error.response.statusText);
       }
     },
     handleInputChanges() {
       this.isUsernameAvailable = false;
-      this.success = false;
-      this.error = false;
+      this.createUserSuccess = false;
+      this.createUserError = false;
     },
     async createAccount() {
       const data = JSON.stringify({ data: { name: this.username } });
 
-      const response = await this.req.make("POST", "/api/v1/accounts", data);
+      try {
+        const response = await this.req.make("POST", "/api/v1/accounts", data);
 
-      if (response.status === 201) {
-        this.handleInputChanges();
-        this.$refs.createAccountForm.reset();
-        this.$refs.createAccountForm.resetValidation();
+        if (response.status === 201) {
+          this.success("User created successfully!");
+          this.handleInputChanges();
+          this.$refs.createAccountForm.reset();
+          this.$refs.createAccountForm.resetValidation();
+        }
+      } catch (error) {
+        this.error(error.response.statusText);
       }
     },
   },
@@ -126,11 +136,11 @@ export default {
     users() {
       return this.getUsers;
     },
-    successMsg() {
-      return this.success ? ["Username is available."] : [];
+    createUserSuccessMsg() {
+      return this.createUserSuccess ? ["Username is available."] : [];
     },
-    errorMsg() {
-      return this.error ? ["Username is taken."] : [];
+    createUserErrorMsg() {
+      return this.createUserError ? ["Username is taken."] : [];
     },
     getDataTableHeaders() {
       return this.$store.getters.getDataTableHeaders;
