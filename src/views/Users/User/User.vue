@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- User {{ id }} -->
     <BaseTabs
       :tabs-array="tabs"
       :current-tab="currentTab"
@@ -15,20 +14,6 @@
         <v-card class="mx-auto text-center" color="white">
           <v-card-text>
             <v-sheet>
-              <!-- Line chart from Vuetify -->
-              <!-- <v-sparkline
-                :value="amountArray"
-                color="secondary"
-                height="100"
-                padding="24"
-                stroke-linecap="round"
-                line-width="2"
-                label-size="4"
-                smooth
-              >
-                <template v-slot:label="item"> ${{ item.value }} </template>
-              </v-sparkline> -->
-              <!-- Line chart from ChartJS -->
               <LineChart
                 :chart-data="this.handleChartData()"
                 :chart-options="this.handleChartOptions()"

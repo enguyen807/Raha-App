@@ -1,4 +1,9 @@
-const state = {};
+import Request from "../../api/index";
+
+const state = {
+  req: new Request(),
+  users: [],
+};
 const getters = {
   getUsers(state, getters, rootState) {
     return rootState.users;
@@ -6,7 +11,10 @@ const getters = {
 };
 const mutations = {
   SET_USERS(state, users) {
-    state.users = users;
+    state.users = [...users];
+  },
+  ADD_USER(state, user) {
+    state.users.push(...user);
   },
 };
 const actions = {};

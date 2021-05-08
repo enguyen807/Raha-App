@@ -86,7 +86,8 @@ export default {
   methods: {
     ...mapActions("alert", ["error", "success"]),
     async checkIfUsernameIsAvailable() {
-      // Variable generated from Postman
+      if (!this.formIsValid) return;
+
       const data = JSON.stringify({ data: { name: this.username } });
 
       try {
@@ -115,6 +116,8 @@ export default {
       this.createUserError = false;
     },
     async createAccount() {
+      if (!this.formIsValid) return;
+
       const data = JSON.stringify({ data: { name: this.username } });
 
       try {

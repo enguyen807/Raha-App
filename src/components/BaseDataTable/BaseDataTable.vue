@@ -10,38 +10,14 @@
       ></v-text-field>
     </v-card-title>
     <v-data-table
-      v-model="selected"
+      v-model="selectedItems"
       :headers="dataTableHeaders"
-      hide-default-header
       :items="items"
       :single-select="singleSelect"
       item-key="id"
       :show-select="showSelect"
       :search="search"
     >
-      <template #header="{ props: { headers } }">
-        <thead class="v-data-table-header">
-          <tr>
-            <th
-              v-for="header in headers"
-              :key="header.value"
-              :width="`${100 / headers.length - 1}%`"
-              class="column"
-              v-bind:class="[
-                header.sortable ? 'sortable' : '',
-                sortBy == header.value ? 'active' : '',
-                descending ? 'desc' : 'asc',
-              ]"
-              @click="header.sortable ? handleSort(header.value) : ''"
-            >
-              {{ header.text }}
-              <v-icon v-if="header.sortable" class="v-data-table-header__icon"
-                >mdi-chevron-up
-              </v-icon>
-            </th>
-          </tr>
-        </thead>
-      </template>
       <template #[`header.data-table-select`]="{}"> </template>
       <!-- Custom Checkbox Named Slots -->
       <template #[`item.data-table-select`]="{ isSelected, select, item }">
@@ -92,8 +68,8 @@ export default {
       type: Number,
       default: 1,
     },
-    currentTab: {
-      type: String,
+    selectedUser: {
+      type: Array,
     },
     showSelect: {
       type: Boolean,
@@ -150,12 +126,15 @@ export default {
       }
     },
   },
-  watch: {
-    selected() {
-      this.$emit("selected-items", this.selected);
-    },
-    currentTab() {
-      this.selected = [];
+  computed: {
+    selectedItems: {
+      get() {
+        return this.selected;
+      },
+      set(v) {
+        this.selected = v;
+        this.$emit("input", this.selected);
+      },
     },
   },
 };

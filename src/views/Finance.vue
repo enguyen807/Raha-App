@@ -8,14 +8,19 @@
       >
         <v-form ref="paymentForm" v-model="formIsValid">
           <BaseTabItem value="tabs-0">
-            <h2 v-if="!selectedUser1Data" class="mt-6">
+            <h2 v-if="selectedUserData.length === 0" class="mt-6">
               Please select a user from the table below
             </h2>
             <div v-else class="d-flex flex-column mt-5 justify-space-between">
               <v-text-field
+                label="Account Number"
+                disabled
+                v-model="selectedUserData[0]['id']"
+              ></v-text-field>
+              <v-text-field
                 label="Username"
                 disabled
-                v-model="selectedUser1Data['name']"
+                v-model="selectedUserData[0]['name']"
               ></v-text-field>
               <v-text-field
                 label="Description (optional)"
@@ -41,16 +46,21 @@
             </div>
           </BaseTabItem>
           <BaseTabItem value="tabs-1">
-            <h2 v-if="!selectedUser2Data" class="mt-6">
+            <h2 v-if="selectedUserData.length < 2" class="mt-6">
               Please select two users from the table below
             </h2>
             <div v-else class="d-flex flex-column mt-5 justify-space-between">
               <div>
-                <h3>Transfer Funds from {{ selectedUser1Data["name"] }}</h3>
+                <h3>Transfer Funds from {{ selectedUserData[0]["name"] }}</h3>
+                <v-text-field
+                  label="Account Number"
+                  disabled
+                  v-model="selectedUserData[0]['id']"
+                ></v-text-field>
                 <v-text-field
                   label="Username"
                   disabled
-                  v-model="selectedUser1Data['name']"
+                  v-model="selectedUserData[0]['name']"
                 ></v-text-field>
                 <v-text-field
                   label="Description (optional)"
@@ -60,7 +70,7 @@
                   type="number"
                   disabled
                   label="Current Balance"
-                  v-model.number="selectedUser1Data['balance']"
+                  v-model.number="selectedUserData[0]['balance']"
                   min="0"
                 ></v-text-field>
                 <v-text-field
@@ -74,17 +84,19 @@
                       : []
                   "
                   min="0"
-                  :max="selectedUser1Data['balance']"
+                  :max="selectedUserData[0]['balance']"
                   @keypress="onlyNumbers"
                 ></v-text-field>
               </div>
 
               <div>
-                <h3>{{ selectedUser2Data["name"] }} receives the following:</h3>
+                <h3>
+                  {{ selectedUserData[1]["name"] }} receives the following:
+                </h3>
                 <v-text-field
                   label="Username"
                   disabled
-                  v-model="selectedUser2Data['name']"
+                  v-model="selectedUserData[1]['name']"
                 ></v-text-field>
                 <v-text-field
                   type="number"
@@ -100,52 +112,7 @@
                 btn-block
                 :btn-color="['accent', 'black--text']"
                 :btn-disabled="!formIsValid"
-                @click.native="handleSendFunds"
-              />
-            </div>
-          </BaseTabItem>
-          <BaseTabItem value="tabs-2">
-            <h2 v-if="!selectedUser1Data" class="mt-6">
-              Please select a user from the table below
-            </h2>
-            <div v-else class="d-flex flex-column mt-5 justify-space-between">
-              <v-text-field
-                label="Username"
-                disabled
-                v-model="selectedUser1Data['name']"
-              ></v-text-field>
-              <v-text-field
-                label="Description (optional)"
-                v-model="selectedUser1FormData['description']"
-              ></v-text-field>
-              <v-text-field
-                type="number"
-                disabled
-                label="Current Balance"
-                v-model.number="selectedUser1Data['balance']"
-                min="0"
-              ></v-text-field>
-              <v-text-field
-                type="number"
-                label="Amount to Remove from Account"
-                v-model.number="selectedUser1FormData['amount']"
-                ref="selectedUser1Amount"
-                :rules="
-                  currentTab === 'tabs-2' && selectedUser1FormData
-                    ? balanceFieldRules
-                    : []
-                "
-                min="0"
-                :max="selectedUser1Data['balance']"
-                @keypress="onlyNumbers"
-              ></v-text-field>
-
-              <BaseButton
-                title="Remove Funds from Account"
-                btn-block
-                :btn-color="['accent', 'black--text']"
-                :btn-disabled="!formIsValid"
-                @click.native="handleRemoveFunds"
+                @click.native="handleTransferFunds"
               />
             </div>
           </BaseTabItem>
@@ -162,9 +129,9 @@
         :max-selected-items="currentTab !== 'tabs-1' ? 1 : 2"
         :items="users"
         :single-select="false"
-        :current-tab="currentTab"
-        @selected-items="handleUserSelection"
+        @input="handleUserSelection"
         :show-select="true"
+        :key="componentKey"
       />
     </v-col>
   </div>
@@ -206,7 +173,7 @@ export default {
       },
     ],
     formIsValid: true,
-    selectedUser1Data: null,
+    selectedUserData: [],
     selectedUser1FormData: {
       amount: 0,
       description: "",
@@ -216,6 +183,7 @@ export default {
       amount: 0,
       description: "",
     },
+    componentKey: 0,
     description2: "",
     rules: [(value) => !!value || "Required."],
   }),
@@ -223,35 +191,41 @@ export default {
     this.$store.dispatch("getUsers");
   },
   methods: {
-    ...mapActions("finance", ["addPayment", "updateBalances", "deductPayment"]),
+    ...mapActions("finance", [
+      "addPayment",
+      "transferPayment",
+      "deductPayment",
+    ]),
     getIndex(id) {
       const remitterIndex = this.users.findIndex((u) => {
         return u.id === id;
       });
       return remitterIndex;
     },
-    handleTabSelection(value) {
-      this.currentTab = value;
+    resetForm() {
+      this.currentTab = this.currentTab;
+      // Rerenders data table
+      this.componentKey += 1;
       // Sets both array to empty on tab change
-      this.selectedUser1Data = null;
-      this.selectedUser2Data = null;
+      this.selectedUserData = [];
       // Reset amount form field on tab change
       this.selectedUser1FormData["amount"] = 0;
     },
+    handleTabSelection(value) {
+      this.currentTab = value;
+      this.resetForm();
+    },
     handleUserSelection(value) {
-      // console.log(value);
+      this.selectedUserData = value;
       this.$refs.paymentForm.validate();
-      this.selectedUser1Data = value[0];
-      this.selectedUser2Data = value.length > 1 ? value[1] : null;
       return value;
     },
     async handleAddFunds() {
-      const { selectedUser1Data, selectedUser1FormData } = this;
-      const { balance, id, name, number } = selectedUser1Data;
-      const { amount, description } = selectedUser1FormData;
-      const beneficiaryIndex = this.getIndex(id);
+      if (!this.formIsValid) return;
 
-      console.log(balance);
+      const { selectedUserData, selectedUser1FormData } = this;
+      const { id, name, number } = selectedUserData[0];
+      const { amount, description } = selectedUser1FormData;
 
       const data = JSON.stringify({
         data: {
@@ -264,38 +238,27 @@ export default {
         },
       });
 
-      console.log(data);
-
-      try {
-        const response = await this.req.make("POST", "/api/v1/payments", data);
-
-        console.log(response);
-        if (response.status === 201) {
-          this.addPayment(response);
-          this.users[beneficiaryIndex].balance += amount;
-        }
-      } catch (e) {
-        this.addPayment(e.response);
+      const response = await this.addPayment(data);
+      if (response) {
+        this.resetForm();
       }
     },
-    async handleSendFunds() {
-      const {
-        selectedUser1Data,
-        selectedUser1FormData,
-        selectedUser2Data,
-      } = this;
+    async handleTransferFunds() {
+      if (!this.formIsValid) return;
+
+      const { selectedUserData, selectedUser1FormData } = this;
       const {
         balance: user1Balance,
         id: user1Id,
         name: user1Name,
         number: user1Number,
-      } = selectedUser1Data;
+      } = selectedUserData[0];
       const {
         balance: user2Balance,
         id: user2Id,
         name: user2Name,
         number: user2Number,
-      } = selectedUser2Data;
+      } = selectedUserData[1];
       const { amount, description } = selectedUser1FormData;
       const remitterIndex = this.getIndex(user1Id);
       const beneficiaryIndex = this.getIndex(user2Id);
@@ -309,8 +272,6 @@ export default {
           beneficiary_account_id: user2Id,
         },
       });
-
-      console.log(data);
 
       try {
         const response = await this.req.make("POST", "/api/v1/payments", data);
@@ -326,6 +287,8 @@ export default {
       }
     },
     async handleRemoveFunds() {
+      if (!this.formIsValid) return;
+
       const { selectedUser1Data, selectedUser1FormData } = this;
       const { balance, id, name, number } = selectedUser1Data;
       const { amount, description } = selectedUser1FormData;
@@ -386,10 +349,10 @@ export default {
     },
     balanceFieldRules() {
       const rules = [(v) => !!v || "Required."];
-      if (this.selectedUser1Data) return;
+      if (this.selectedUserData.length === 0) return;
       // balance doesn't exist
       const rule = (v) =>
-        (v || "") <= this.selectedUser1Data["balance"] ||
+        (v || "") <= this.selectedUserData[0]["balance"] ||
         "You do not have enough funds to do this action!";
       rules.push(rule);
       return rules;

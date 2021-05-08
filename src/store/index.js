@@ -13,6 +13,11 @@ const state = {
   users: [],
   dataTableHeaders: [
     {
+      text: "Account No.",
+      value: "id",
+      sortable: true,
+    },
+    {
       text: "Name",
       value: "name",
       sortable: true,
@@ -37,17 +42,21 @@ export const mutations = {
     state.users = [...users];
   },
   ADD_PAYMENT(state, payload) {
+    // console.log(payload);
+
     const index = state.users.findIndex(
       (user) => user.id === payload.beneficiary_account_id
     );
 
     const beneficiary = {
-      ...this.state.user[index],
+      ...state.users[index],
     };
+
+    beneficiary.balance += payload.amount;
 
     Vue.set(state.users, index, beneficiary);
   },
-  UPDATE_BALANCES(state, payload) {
+  TRANSFER_PAYMENT(state, payload) {
     const remitterIndex = state.users.findIndex((u) => {
       return u.id === payload.remitter_account_id;
     });

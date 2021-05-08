@@ -6,7 +6,7 @@
         <span class="ml-2">{{ link["title"] }}</span>
       </v-btn>
     </span>
-    <span v-else>
+    <span :class="btnDisabled ? 'btn--disabled' : ''" v-else>
       <v-btn
         :block="btnBlock"
         :small="btnSmall"
@@ -59,4 +59,7 @@ export default {
 </script>
 
 <style>
+.btn--disabled {
+  cursor: not-allowed;
+}
 </style>
