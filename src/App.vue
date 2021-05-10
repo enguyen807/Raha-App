@@ -15,7 +15,9 @@ export default {
   data: () => ({
     //
   }),
-
+  mounted() {
+    this.$store.dispatch("user/getUsers");
+  },
   computed: {},
 };
 </script>

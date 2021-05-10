@@ -40,7 +40,7 @@
 
 <script>
 import Request from "../../api/index";
-import { mapActions, mapGetters } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 import BaseDataTable from "../../components/BaseDataTable/BaseDataTable";
 import BaseButton from "../../components/BaseButton/BaseButton";
@@ -60,9 +60,7 @@ export default {
       (value) => (value && value.length >= 5) || "Min 5 characters",
     ],
   }),
-  mounted() {
-    this.$store.dispatch("user/getUsers");
-  },
+  mounted() {},
   methods: {
     ...mapActions("user", ["createUser"]),
     async createAccount() {
@@ -77,10 +75,7 @@ export default {
     },
   },
   computed: {
-    ...mapGetters("finance", ["getUsers"]),
-    users() {
-      return this.getUsers;
-    },
+    ...mapState("user", ["users"]),
     getDataTableHeaders() {
       return this.$store.getters.getDataTableHeaders;
     },

@@ -6,8 +6,10 @@ const state = {
   users: [],
 };
 const getters = {
-  getUsers(state) {
-    return state.users;
+  getUserById: (state) => (id) => {
+    console.log(id);
+    console.log(state);
+    return state.users.find((user) => user.id === id);
   },
 };
 const mutations = {

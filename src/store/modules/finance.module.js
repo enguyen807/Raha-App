@@ -3,11 +3,7 @@ import Request from "../../api/index";
 const state = {
   req: new Request(),
 };
-const getters = {
-  getUsers(state, getters, rootState, rootGetters) {
-    return rootGetters["user/getUsers"];
-  },
-};
+const getters = {};
 const mutations = {};
 const actions = {
   getUsers({ dispatch, commit, getters, rootGetters }) {

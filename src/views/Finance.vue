@@ -194,7 +194,7 @@
 
 <script>
 import Request from "../api/index";
-import { mapGetters, mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 import BaseTabs from "../components/BaseTabs/BaseTabs";
 import BaseTabItem from "../components/BaseTabs/BaseTabItems/BaseTabItem/BaseTabItem";
@@ -242,9 +242,7 @@ export default {
     description2: "",
     rules: [(value) => !!value || "Required."],
   }),
-  mounted() {
-    this.$store.dispatch("finance/getUsers");
-  },
+  mounted() {},
   methods: {
     ...mapActions("finance", [
       "addPayment",
@@ -364,10 +362,7 @@ export default {
     },
   },
   computed: {
-    ...mapGetters("user", ["getUsers"]),
-    users() {
-      return this.getUsers;
-    },
+    ...mapState("user", ["users"]),
     getDataTableHeaders() {
       return this.$store.getters.getDataTableHeaders;
     },

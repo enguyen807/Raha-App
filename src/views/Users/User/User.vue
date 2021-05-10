@@ -1,5 +1,17 @@
 <template>
   <div>
+    <v-card>
+      <v-card-title>{{ user.name }}</v-card-title>
+      <v-card-subtitle
+        ><strong>Account No.:</strong> {{ user.number }}</v-card-subtitle
+      >
+
+      <v-card-text>
+        <div class="mb-4 text-h4">
+          <strong>Balance:</strong> ${{ user.balance }}
+        </div>
+      </v-card-text>
+    </v-card>
     <BaseTabs
       :tabs-array="tabs"
       :current-tab="currentTab"
@@ -34,7 +46,7 @@ import LineChart from "../../../components/BaseCharts/BaseLineChart/BaseLineChar
 
 import Request from "../../../api/index";
 
-import { mapActions } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "User",
@@ -53,6 +65,11 @@ export default {
     currentTab: "tabs-0",
     tableHeaders: [
       {
+        text: "Remitter Account No.",
+        value: "remitter_account_number",
+        sortable: true,
+      },
+      {
         text: "Remitter",
         value: "remitter_name",
         sortable: true,
@@ -70,6 +87,11 @@ export default {
       {
         text: "Beneficiary",
         value: "beneficiary_name",
+        sortable: true,
+      },
+      {
+        text: "Beneficiary Account No.",
+        value: "beneficiary_account_number",
         sortable: true,
       },
     ],
@@ -195,6 +217,9 @@ export default {
     },
   },
   computed: {
+    user() {
+      return this.$store.getters["user/getUserById"](this.id);
+    },
     amountArray() {
       return this.payments
         .map((payment) =>
@@ -220,6 +245,8 @@ export default {
           beneficiary_name: obj["beneficiary_name"],
           beneficiary_account_id: obj["beneficiary_account_id"] || null,
           remitter_account_id: obj["remitter_account_id"] || null,
+          remitter_account_number: obj["remitter_account_number"] || null,
+          beneficiary_account_number: obj["beneficiary_account_number"] || null,
         };
         return data;
       });
