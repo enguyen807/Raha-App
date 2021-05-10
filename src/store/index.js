@@ -1,5 +1,5 @@
 import Vue from "vue";
-import Vuex, { Store } from "vuex";
+import Vuex from "vuex";
 import Request from "../api/index";
 
 import { user } from "./modules/user.module";
@@ -10,11 +10,10 @@ Vue.use(Vuex);
 
 const state = {
   req: new Request(),
-  users: [],
   dataTableHeaders: [
     {
       text: "Account No.",
-      value: "id",
+      value: "number",
       sortable: true,
     },
     {
@@ -37,79 +36,9 @@ export const getters = {
   },
 };
 
-export const mutations = {
-  SET_USERS(state, users) {
-    state.users = [...users];
-  },
-  ADD_PAYMENT(state, payload) {
-    // console.log(payload);
+export const mutations = {};
 
-    const index = state.users.findIndex(
-      (user) => user.id === payload.beneficiary_account_id
-    );
-
-    const beneficiary = {
-      ...state.users[index],
-    };
-
-    beneficiary.balance += payload.amount;
-
-    Vue.set(state.users, index, beneficiary);
-  },
-  TRANSFER_PAYMENT(state, payload) {
-    const remitterIndex = state.users.findIndex((u) => {
-      return u.id === payload.remitter_account_id;
-    });
-
-    const beneficiaryIndex = state.users.findIndex((u) => {
-      return u.id === payload.beneficiary_account_id;
-    });
-
-    const remitter = {
-      ...this.state.user[remitterIndex],
-    };
-
-    const beneficiary = {
-      ...this.state.user[beneficiaryIndex],
-    };
-
-    remitter.balance -= payload.amount;
-    beneficiary.balance += payload.amount;
-
-    Vue.set(state.users, remitterIndex, remitter);
-    Vue.set(state.users, beneficiaryIndex, beneficiary);
-  },
-  DEDUCT_PAYMENT(state, payload) {
-    const index = state.users.findIndex(
-      (user) => user.id === payload.remitter_account_id
-    );
-
-    const remitter = {
-      ...this.state.user[index],
-    };
-
-    remitter.balance -= payload.amount;
-
-    Vue.set(state.users, index, remitter);
-  },
-};
-
-export const actions = {
-  async getUsers({ dispatch, commit }) {
-    try {
-      const response = await this.state.req.make(
-        "POST",
-        "/api/v1/accounts/search",
-        {}
-      );
-      commit("SET_USERS", response.data.data);
-    } catch (e) {
-      setTimeout(() => {
-        dispatch("alert/error", e.response.statusText, { root: true });
-      });
-    }
-  },
-};
+export const actions = {};
 
 const modules = {
   user,

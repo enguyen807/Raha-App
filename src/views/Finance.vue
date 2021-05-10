@@ -63,15 +63,15 @@
                   v-model="selectedUserData[0]['name']"
                 ></v-text-field>
                 <v-text-field
-                  label="Description (optional)"
-                  v-model="selectedUser1FormData['description']"
-                ></v-text-field>
-                <v-text-field
                   type="number"
                   disabled
                   label="Current Balance"
                   v-model.number="selectedUserData[0]['balance']"
                   min="0"
+                ></v-text-field>
+                <v-text-field
+                  label="Description (optional)"
+                  v-model="selectedUser1FormData['description']"
                 ></v-text-field>
                 <v-text-field
                   type="number"
@@ -94,6 +94,11 @@
                   {{ selectedUserData[1]["name"] }} receives the following:
                 </h3>
                 <v-text-field
+                  label="Account Number"
+                  disabled
+                  v-model="selectedUserData[1]['id']"
+                ></v-text-field>
+                <v-text-field
                   label="Username"
                   disabled
                   v-model="selectedUserData[1]['name']"
@@ -113,6 +118,56 @@
                 :btn-color="['accent', 'black--text']"
                 :btn-disabled="!formIsValid"
                 @click.native="handleTransferFunds"
+              />
+            </div>
+          </BaseTabItem>
+          <BaseTabItem value="tabs-2">
+            <h2 v-if="selectedUserData.length === 0" class="mt-6">
+              Please select a user from the table below
+            </h2>
+            <div v-else class="d-flex flex-column mt-5 justify-space-between">
+              <v-text-field
+                label="Account Number"
+                disabled
+                v-model="selectedUserData[0]['id']"
+              ></v-text-field>
+              <v-text-field
+                label="Username"
+                disabled
+                v-model="selectedUserData[0]['name']"
+              ></v-text-field>
+              <v-text-field
+                type="number"
+                disabled
+                label="Current Balance"
+                v-model.number="selectedUserData[0]['balance']"
+                min="0"
+              ></v-text-field>
+              <v-text-field
+                label="Description (optional)"
+                v-model="selectedUser1FormData['description']"
+              ></v-text-field>
+              <v-text-field
+                type="number"
+                label="Amount to Remove from Account"
+                v-model.number="selectedUser1FormData['amount']"
+                ref="selectedUser1Amount"
+                :rules="
+                  currentTab === 'tabs-2' && selectedUser1FormData
+                    ? balanceFieldRules
+                    : []
+                "
+                min="0"
+                :max="selectedUserData[0]['balance']"
+                @keypress="onlyNumbers"
+              ></v-text-field>
+
+              <BaseButton
+                title="Remove Funds from Account"
+                btn-block
+                :btn-color="['accent', 'black--text']"
+                :btn-disabled="!formIsValid"
+                @click.native="handleRemoveFunds"
               />
             </div>
           </BaseTabItem>
@@ -188,7 +243,7 @@ export default {
     rules: [(value) => !!value || "Required."],
   }),
   mounted() {
-    this.$store.dispatch("getUsers");
+    this.$store.dispatch("finance/getUsers");
   },
   methods: {
     ...mapActions("finance", [
@@ -206,10 +261,11 @@ export default {
       this.currentTab = this.currentTab;
       // Rerenders data table
       this.componentKey += 1;
+      // Reset amount form field
+      this.selectedUser1FormData["description"] = "";
+      this.selectedUser1FormData["amount"] = 0;
       // Sets both array to empty on tab change
       this.selectedUserData = [];
-      // Reset amount form field on tab change
-      this.selectedUser1FormData["amount"] = 0;
     },
     handleTabSelection(value) {
       this.currentTab = value;
@@ -247,21 +303,9 @@ export default {
       if (!this.formIsValid) return;
 
       const { selectedUserData, selectedUser1FormData } = this;
-      const {
-        balance: user1Balance,
-        id: user1Id,
-        name: user1Name,
-        number: user1Number,
-      } = selectedUserData[0];
-      const {
-        balance: user2Balance,
-        id: user2Id,
-        name: user2Name,
-        number: user2Number,
-      } = selectedUserData[1];
+      const { id: user1Id } = selectedUserData[0];
+      const { id: user2Id } = selectedUserData[1];
       const { amount, description } = selectedUser1FormData;
-      const remitterIndex = this.getIndex(user1Id);
-      const beneficiaryIndex = this.getIndex(user2Id);
 
       const data = JSON.stringify({
         data: {
@@ -273,28 +317,17 @@ export default {
         },
       });
 
-      try {
-        const response = await this.req.make("POST", "/api/v1/payments", data);
-
-        console.log(response);
-        if (response.status === 201) {
-          this.updateBalances(response);
-          this.users[remitterIndex].balance -= amount;
-          this.users[beneficiaryIndex].balance += amount;
-        }
-      } catch (e) {
-        this.updateBalances(e.response);
+      const response = await this.transferPayment(data);
+      if (response) {
+        this.resetForm();
       }
     },
     async handleRemoveFunds() {
       if (!this.formIsValid) return;
 
-      const { selectedUser1Data, selectedUser1FormData } = this;
-      const { balance, id, name, number } = selectedUser1Data;
+      const { selectedUserData, selectedUser1FormData } = this;
+      const { id, name, number } = selectedUserData[0];
       const { amount, description } = selectedUser1FormData;
-      const remitterIndex = this.getIndex(id);
-
-      console.log(balance);
 
       const data = JSON.stringify({
         data: {
@@ -307,18 +340,9 @@ export default {
         },
       });
 
-      console.log(data);
-
-      try {
-        const response = await this.req.make("POST", "/api/v1/payments", data);
-
-        console.log(response);
-        if (response.status === 201) {
-          this.deductPayment(response);
-          this.users[remitterIndex].balance -= amount;
-        }
-      } catch (e) {
-        this.deductPayment(e.response);
+      const response = await this.deductPayment(data);
+      if (response) {
+        this.resetForm();
       }
     },
     onlyNumbers(e) {
@@ -340,7 +364,7 @@ export default {
     },
   },
   computed: {
-    ...mapGetters("finance", ["getUsers"]),
+    ...mapGetters("user", ["getUsers"]),
     users() {
       return this.getUsers;
     },

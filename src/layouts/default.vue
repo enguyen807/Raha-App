@@ -1,5 +1,8 @@
 <template>
-  <v-app>
+  <v-app
+    id="main"
+    :style="{ background: this.$vuetify.theme.themes[theme].background }"
+  >
     <BaseNavigationDrawer v-model="drawer">
       <template #drawer-items>
         <BaseList :links="links" />
@@ -16,7 +19,7 @@
       </template>
     </BaseToolbar>
 
-    <v-main class="grey lighten-3">
+    <v-main>
       <BaseAlert />
       <v-container>
         <v-layout row wrap>
@@ -69,6 +72,9 @@ export default {
   computed: {
     isMobile() {
       return this.$vuetify.breakpoint.mdAndDown;
+    },
+    theme() {
+      return this.$vuetify.theme.dark ? "dark" : "light";
     },
   },
 };

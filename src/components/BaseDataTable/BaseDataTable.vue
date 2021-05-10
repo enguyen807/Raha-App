@@ -80,52 +80,11 @@ export default {
     BaseButton,
   },
   data: () => ({
-    sortBy: null,
-    descending: false,
     selected: [],
     expanded: [],
     search: "",
   }),
-  methods: {
-    handleSort(column) {
-      this.descending = !this.descending;
-
-      if (this.sortBy === column) {
-        this.sortItems();
-      } else {
-        this.sortBy = column;
-        this.descending = false;
-        this.sortItems();
-      }
-    },
-    sortItems() {
-      const { sortBy, descending } = this;
-      let items = this.items;
-
-      if (sortBy) {
-        items.sort((a, b) => {
-          const sortA =
-            typeof a[sortBy] === "number"
-              ? a[sortBy]
-              : a[sortBy].toString().toLowerCase();
-          const sortB =
-            typeof b[sortBy] === "number"
-              ? b[sortBy]
-              : b[sortBy].toString().toLowerCase();
-
-          if (descending) {
-            if (sortA < sortB) return 1;
-            if (sortA > sortB) return -1;
-            return 0;
-          } else {
-            if (sortA < sortB) return -1;
-            if (sortA > sortB) return 1;
-            return 0;
-          }
-        });
-      }
-    },
-  },
+  methods: {},
   computed: {
     selectedItems: {
       get() {

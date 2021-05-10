@@ -14,6 +14,9 @@
 import { mapState, mapActions } from "vuex";
 
 export default {
+  mounted() {
+    console.log("Alert mounted");
+  },
   watch: {
     $route() {
       this.clearAlert();
@@ -22,6 +25,7 @@ export default {
   methods: {
     ...mapActions("alert", ["clear"]),
     clearAlert() {
+      if (!this.showAlert) return;
       this.clear();
     },
   },
