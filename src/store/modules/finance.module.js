@@ -30,7 +30,11 @@ const actions = {
       userObj.balance += user.amount;
 
       commit("user/UPDATE_BALANCE", { index, userObj }, { root: true });
-      dispatch("alert/success", "Funds added successfully!", { root: true });
+      dispatch(
+        "alert/success",
+        `$${user.amount} successfully added to ${user.beneficiary_name}'s account!`,
+        { root: true }
+      );
 
       setTimeout(() => {
         dispatch("alert/clear", null, { root: true });
@@ -52,6 +56,8 @@ const actions = {
 
       const user = response.data.data;
 
+      console.log(user);
+
       // Get beneficiary index and object
       let index = localUserState.findIndex(
         (u) => u.id === user.beneficiary_account_id
@@ -72,9 +78,13 @@ const actions = {
       userObj.balance -= user.amount;
       commit("user/UPDATE_BALANCE", { index, userObj }, { root: true });
 
-      dispatch("alert/success", "Funds transfered successfully!", {
-        root: true,
-      });
+      dispatch(
+        "alert/success",
+        `${user.amount} transfered from ${user.remitter_name} to ${user.beneficiary_name} successfully!`,
+        {
+          root: true,
+        }
+      );
       setTimeout(() => {
         dispatch("alert/clear", null, { root: true });
       }, 3000);
@@ -95,6 +105,7 @@ const actions = {
 
       const user = response.data.data;
 
+      console.log(user);
       const index = localUserState.findIndex(
         (u) => u.id === user.remitter_account_id
       );
@@ -105,11 +116,17 @@ const actions = {
       userObj.balance -= user.amount;
 
       commit("user/UPDATE_BALANCE", { index, userObj }, { root: true });
-      setTimeout(() => {
-        dispatch("alert/success", "Funds deducted successfully!", {
+      dispatch(
+        "alert/success",
+        `${user.amount} has been deducted from ${user.beneficiary_name}'s account successfully!`,
+        {
           root: true,
-        });
-      });
+        }
+      );
+      setTimeout(() => {
+        dispatch("alert/clear", null, { root: true });
+      }, 3000);
+      return response;
       return response;
     } catch (error) {
       const errorMsg = error;

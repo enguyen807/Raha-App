@@ -24,16 +24,15 @@
               ></v-text-field>
               <v-text-field
                 label="Description (optional)"
-                v-model="selectedUser1FormData['description']"
+                v-model="description"
               ></v-text-field>
               <v-text-field
-                type="number"
+                type="text"
                 label="Amount to Add"
-                v-model.number="selectedUser1FormData['amount']"
+                v-model.lazy="addAmount"
+                v-money="money"
                 ref="selectedUser1Amount"
                 :rules="currentTab === 'tabs-0' ? rules : []"
-                min="0"
-                @keypress="onlyNumbers"
               ></v-text-field>
 
               <BaseButton
@@ -63,29 +62,23 @@
                   v-model="selectedUserData[0]['name']"
                 ></v-text-field>
                 <v-text-field
-                  type="number"
+                  type="text"
                   disabled
                   label="Current Balance"
-                  v-model.number="selectedUserData[0]['balance']"
+                  v-model="selectedUserData[0]['balance']"
                   min="0"
                 ></v-text-field>
                 <v-text-field
                   label="Description (optional)"
-                  v-model="selectedUser1FormData['description']"
+                  v-model="description"
                 ></v-text-field>
                 <v-text-field
-                  type="number"
-                  label="Amount to send"
-                  v-model.number="selectedUser1FormData['amount']"
+                  type="text"
+                  label="Amount to Send"
+                  v-model.lazy="transferAmount"
+                  v-money="money"
                   ref="selectedUser1Amount"
-                  :rules="
-                    currentTab === 'tabs-1' && selectedUser1FormData
-                      ? balanceFieldRules
-                      : []
-                  "
-                  min="0"
-                  :max="selectedUserData[0]['balance']"
-                  @keypress="onlyNumbers"
+                  :rules="currentTab === 'tabs-1' ? rules : []"
                 ></v-text-field>
               </div>
 
@@ -104,11 +97,10 @@
                   v-model="selectedUserData[1]['name']"
                 ></v-text-field>
                 <v-text-field
-                  type="number"
+                  type="text"
                   disabled
                   label="Amount to recieve"
-                  v-model.number="selectedUser1FormData['amount']"
-                  min="0"
+                  v-model="transferAmount"
                 ></v-text-field>
               </div>
 
@@ -145,21 +137,16 @@
               ></v-text-field>
               <v-text-field
                 label="Description (optional)"
-                v-model="selectedUser1FormData['description']"
+                v-model="description"
               ></v-text-field>
+
               <v-text-field
-                type="number"
+                type="text"
                 label="Amount to Remove from Account"
-                v-model.number="selectedUser1FormData['amount']"
+                v-model.lazy="deductAmount"
+                v-money="money"
                 ref="selectedUser1Amount"
-                :rules="
-                  currentTab === 'tabs-2' && selectedUser1FormData
-                    ? balanceFieldRules
-                    : []
-                "
-                min="0"
-                :max="selectedUserData[0]['balance']"
-                @keypress="onlyNumbers"
+                :rules="currentTab === 'tabs-2' ? rules : []"
               ></v-text-field>
 
               <BaseButton
@@ -199,8 +186,9 @@ import { mapState, mapActions } from "vuex";
 import BaseTabs from "../components/BaseTabs/BaseTabs";
 import BaseTabItem from "../components/BaseTabs/BaseTabItems/BaseTabItem/BaseTabItem";
 import BaseButton from "../components/BaseButton/BaseButton";
-
 import BaseDataTable from "../components/BaseDataTable/BaseDataTable";
+
+import { VMoney } from "v-money";
 
 export default {
   name: "Finance",
@@ -227,22 +215,24 @@ export default {
         icon: "mdi-minus",
       },
     ],
+    money: {
+      prefix: "$ ",
+      precision: 2,
+      masked: false /* doesn't work with directive */,
+    },
     formIsValid: true,
     selectedUserData: [],
-    selectedUser1FormData: {
-      amount: 0,
-      description: "",
-    },
+    addAmount: "",
+    transferAmount: "",
+    deductAmount: "",
+    description: "",
     selectedUser2Data: null,
-    selectedUser2FormData: {
-      amount: 0,
-      description: "",
-    },
     componentKey: 0,
     description2: "",
     rules: [(value) => !!value || "Required."],
   }),
   mounted() {},
+  directives: { money: VMoney },
   methods: {
     ...mapActions("finance", [
       "addPayment",
@@ -256,12 +246,13 @@ export default {
       return remitterIndex;
     },
     resetForm() {
-      this.currentTab = this.currentTab;
-      // Rerenders data table
+      // Rerenders data table by changing key of component
       this.componentKey += 1;
       // Reset amount form field
-      this.selectedUser1FormData["description"] = "";
-      this.selectedUser1FormData["amount"] = 0;
+      this.description = "";
+      this.addAmount = "";
+      this.transferAmount = "";
+      this.deductAmount = "";
       // Sets both array to empty on tab change
       this.selectedUserData = [];
     },
@@ -274,16 +265,21 @@ export default {
       this.$refs.paymentForm.validate();
       return value;
     },
+    convertToNumber(string) {
+      let number = Number(string.replace(/[^0-9.-]+/g, ""));
+      return number;
+    },
     async handleAddFunds() {
       if (!this.formIsValid) return;
 
-      const { selectedUserData, selectedUser1FormData } = this;
+      const { selectedUserData, addAmount, description } = this;
       const { id, name, number } = selectedUserData[0];
-      const { amount, description } = selectedUser1FormData;
+
+      const convertedAmount = this.convertToNumber(addAmount);
 
       const data = JSON.stringify({
         data: {
-          amount: amount,
+          amount: convertedAmount,
           type_key: "incoming",
           beneficiary_account_id: id,
           remitter_name: name,
@@ -300,14 +296,17 @@ export default {
     async handleTransferFunds() {
       if (!this.formIsValid) return;
 
-      const { selectedUserData, selectedUser1FormData } = this;
+      const { selectedUserData, transferAmount, description } = this;
       const { id: user1Id } = selectedUserData[0];
       const { id: user2Id } = selectedUserData[1];
-      const { amount, description } = selectedUser1FormData;
+
+      const convertedAmount = this.convertToNumber(transferAmount);
+
+      console.log(convertedAmount);
 
       const data = JSON.stringify({
         data: {
-          amount: amount,
+          amount: convertedAmount,
           description: description,
           type_key: "internal",
           remitter_account_id: user1Id,
@@ -323,13 +322,14 @@ export default {
     async handleRemoveFunds() {
       if (!this.formIsValid) return;
 
-      const { selectedUserData, selectedUser1FormData } = this;
+      const { selectedUserData, deductAmount, description } = this;
       const { id, name, number } = selectedUserData[0];
-      const { amount, description } = selectedUser1FormData;
+
+      const convertedAmount = this.convertToNumber(deductAmount);
 
       const data = JSON.stringify({
         data: {
-          amount: amount,
+          amount: convertedAmount,
           type_key: "outgoing",
           remitter_account_id: id,
           beneficiary_name: name,
@@ -365,6 +365,9 @@ export default {
     ...mapState("user", ["users"]),
     getDataTableHeaders() {
       return this.$store.getters.getDataTableHeaders;
+    },
+    test() {
+      return this.transferAmount;
     },
     balanceFieldRules() {
       const rules = [(v) => !!v || "Required."];
